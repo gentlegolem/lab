@@ -4,7 +4,8 @@ These are read-only analysis scripts for the [write-up](../README.md). They re-r
 a studio's own Claude Code transcripts, cost ledger, git history and landing log. They print aggregate tables only:
 no transcript text, ids or task titles. Nothing is sent anywhere, and nothing is written outside `tables/`.
 
-The tables themselves are not included. Each user generates them from their own data.
+[`tables/`](tables/) holds the output behind the write-up: the run of 2026-11-04 (1,072 runs; the first line of each file
+states the count). Re-running the scripts overwrites these files with tables from your own data.
 
 ## What it measures
 

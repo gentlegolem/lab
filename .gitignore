@@ -6,8 +6,7 @@ PUBLISH_CHECKLIST.md
 # Owner-only settings and notes (the studio's real config values)
 .local/
 
-# Package output and raw data: tables are re-run locally, never committed
-agent-study/package/tables/
+# Package output and raw data (the shipped tables/ are the Nov 4 run)
 agent-study/package/out/
 *.jsonl
 *.log

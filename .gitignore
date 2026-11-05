@@ -1,0 +1,18 @@
+# Local working files (never published)
+PRIVACY_CHECK.md
+QUESTIONS.md
+PUBLISH_CHECKLIST.md
+
+# Package output and raw data: tables are re-run locally, never committed
+agent-study/package/out/
+*.jsonl
+*.log
+
+# Node
+node_modules/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -3,7 +3,11 @@ PRIVACY_CHECK.md
 QUESTIONS.md
 PUBLISH_CHECKLIST.md
 
+# Owner-only settings and notes (the studio's real config values)
+.local/
+
 # Package output and raw data: tables are re-run locally, never committed
+agent-study/package/tables/
 agent-study/package/out/
 *.jsonl
 *.log

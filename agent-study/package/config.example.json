@@ -1,0 +1,8 @@
+{
+	"engineToolPrefix": "mcp__MyEngine__",
+	"engineWord": "engine",
+	"pass2TaskId": "^PLAN2-",
+	"architectPass1": "^Architect: first plan",
+	"architectPass2": "^Architect: second plan",
+	"noisePaths": "^docs/(notes|ledger|status)/"
+}

@@ -515,17 +515,20 @@ function f8() {
 		const s = S(ts); st[nm] = s;
 		o += row(nm, s.n, `${(s.rep / 1e6).toFixed(2)}M`, `${(s.peq / 1e6).toFixed(2)}M`, k(s.peqPerTask), s.nC, s.commits, k(s.peqPerCommit)) + '\n';
 	}
-	// est. saving, method A: (baseline plan-eq per commit - planned plan-eq per commit) x planned commits
-	const a1 = cost[arch[0][0]]; const a2 = cost[arch[1][0]];
-	const sav = (base, plan) => (base.peqPerCommit - plan.peqPerCommit) * plan.commits;
-	const s1 = sav(st['Before pass 1, no plan'], st['Pass 1 tasks']); const s2 = sav(st['Between the passes, unplanned'], st['Pass 2 tasks']);
-	o += '\n' + head('Break-even (est. saving, measured cost)', 'Architect cost (plan-eq, measured)', 'Saving, method A: per-commit rate vs baseline (est.)', 'Net (est.)', 'Saving / cost (est.)') + '\n';
-	o += row('Pass 1 vs tasks before the plan', `${(a1 / 1e6).toFixed(2)}M`, `${(s1 / 1e6).toFixed(2)}M`, `${((s1 - a1) / 1e6).toFixed(2)}M`, r2(s1 / a1)) + '\n';
-	o += row('Pass 2 vs unplanned tasks between the passes', `${(a2 / 1e6).toFixed(2)}M`, `${(s2 / 1e6).toFixed(2)}M`, `${((s2 - a2) / 1e6).toFixed(2)}M`, r2(s2 / a2)) + '\n';
-	// method B (pass 2 only): the pre-plan estimate of the original (unsplit) plan, written down before the architect ran (plan-eq 9.3M, 6 big tasks)
-	const ORIG = 9.3e6;
-	const actual = st['Pass 2 tasks'].peq;
-	o += `\nMethod B (pass 2, est.): the planning session wrote down the unsplit plan's cost before the architect ran: about ${(ORIG / 1e6).toFixed(1)}M plan-equivalent. The pass-2 tasks that have a transcript cost ${(actual / 1e6).toFixed(2)}M (measured, ${st['Pass 2 tasks'].n} of 15 tasks). Saving = ${((ORIG - actual) / 1e6).toFixed(2)}M, net of the architect ${((ORIG - actual - a2) / 1e6).toFixed(2)}M, ratio ${r2((ORIG - actual) / a2)}.\n`;
+	const a2 = cost[arch[1][0]];
+	// The saving (pass 2 only) is priced against the unsplit plan's cost, which the planning session wrote down before
+	// the architect ran (plan-eq 9.3M, 6 big tasks). That figure is a forecast, so the break-even line says how far off it
+	// may be before the sign of the result flips.
+	const ORIG = 9.3e6; const SPLIT_FORECAST = ORIG - 1.6e6; // the plan's own forecast: 17% saved
+	const p2 = st['Pass 2 tasks']; const actual = p2.peq;
+	const each = grp.p2.map((t) => PEQ(t.reported, t.runs.reduce((b, r) => b + r.inclCache, 0)));
+	const m = (x) => `${(x / 1e6).toFixed(2)}M`; const off = (x) => `${(100 * (x / ORIG - 1)).toFixed(1)}%`;
+	const lo = q(each, 0.25); const mid15 = med(each); const hi = q(each, 0.75);
+	o += `\nPass 2 against its forecasts (est.): the planning session forecast the unsplit work at ${m(ORIG)} plan-equivalent and the split work at ${m(SPLIT_FORECAST)}. The ${p2.n} of 15 tasks that have a transcript cost ${m(actual)} (measured; ${pct(actual - SPLIT_FORECAST, SPLIT_FORECAST)} over the split forecast before the 15th task). Saving against the unsplit forecast = ${m(ORIG - actual)}, net of the architect ${m(ORIG - actual - a2)}; with the 15th task at the other tasks' quartiles (${k(lo)}, ${k(mid15)}, ${k(hi)}): saving ${m(ORIG - actual - hi)} to ${m(ORIG - actual - lo)}, net ${m(ORIG - actual - hi - a2)} to ${m(ORIG - actual - lo - a2)}. Break-even: the pass pays for its architect only if the unsplit work would really have cost ${off(actual + a2)} more than forecast (${off(actual + lo + a2)} to ${off(actual + hi + a2)} with the 15th task).\n`;
+	// No per-commit saving: a commit isn't a fixed unit of work (small planned tasks make small commits), so the gap in
+	// cost per commit times the planned commits overstates the saving. The line shows what it would imply.
+	const mid = st['Between the passes, unplanned']; const cpt = (s) => (s.nC ? (s.commits / s.nC).toFixed(1) : 'n/a');
+	o += `\nNo per-commit saving: commits per task (tasks with a commit) were ${cpt(st['Before pass 1, no plan'])} before pass 1, ${cpt(st['Pass 1 tasks'])} in pass 1, ${cpt(mid)} between the passes and ${cpt(p2)} in pass 2, and smaller tasks make smaller commits. Pricing pass 2's ${p2.commits} commits at the between-passes rate (${k(mid.peqPerCommit)} each) would put the unsplit work at ${m(mid.peqPerCommit * p2.commits)}, ${r2((mid.peqPerCommit * p2.commits) / ORIG)}x the planning session's own forecast.\n`;
 	// the skipped planning pass: stream the TOP-LEVEL (coordinator) session logs since 2026-10-27 for an assistant message that costs an architect / planning pass and skips it
 	const SKIP = /(skip(ped|ping)?|not worth|no need for|without|instead of) (the |a |an )?(architect|planning pass|plan pass|plan agent)|(architect|planning pass|plan pass)[^.\n]{0,80}(not worth|skip|overkill|cost(s)? (about|almost|as much))/i;
 	const NUM = /\d+(\.\d+)?\s?[kM]\b/;

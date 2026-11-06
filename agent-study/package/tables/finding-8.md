@@ -15,12 +15,9 @@
 | Pass 2 tasks | 14 | 1.97M | 8.89M | 635k | 14 | 25 | 356k |
 | After pass 2, other tasks | 69 | 13.75M | 72.81M | 1055k | 52 | 207 | 294k |
 
-| Break-even (est. saving, measured cost) | Architect cost (plan-eq, measured) | Saving, method A: per-commit rate vs baseline (est.) | Net (est.) | Saving / cost (est.) |
-| --- | --- | --- | --- | --- |
-| Pass 1 vs tasks before the plan | 1.77M | 109.03M | 107.26M | 61.43 |
-| Pass 2 vs unplanned tasks between the passes | 0.56M | 20.16M | 19.59M | 35.73 |
+Pass 2 against its forecasts (est.): the planning session forecast the unsplit work at 9.30M plan-equivalent and the split work at 7.70M. The 14 of 15 tasks that have a transcript cost 8.89M (measured; 15% over the split forecast before the 15th task). Saving against the unsplit forecast = 0.41M, net of the architect -0.16M; with the 15th task at the other tasks' quartiles (297k, 492k, 588k): saving -0.18M to 0.11M, net -0.74M to -0.45M. Break-even: the pass pays for its architect only if the unsplit work would really have cost 1.7% more than forecast (4.9% to 8.0% with the 15th task).
 
-Method B (pass 2, est.): the planning session wrote down the unsplit plan's cost before the architect ran: about 9.3M plan-equivalent. The pass-2 tasks that have a transcript cost 8.89M (measured, 14 of 15 tasks). Saving = 0.41M, net of the architect -0.16M, ratio 0.73.
+No per-commit saving: commits per task (tasks with a commit) were 10.7 before pass 1, 1.9 in pass 1, 2.7 between the passes and 1.8 in pass 2, and smaller tasks make smaller commits. Pricing pass 2's 25 commits at the between-passes rate (1162k each) would put the unsplit work at 29.05M, 3.12x the planning session's own forecast.
 
 Skipped planning pass (owner-reported): searched 16 coordinator-session logs, 44 assistant messages mentioning an architect or planning pass since 2026-10-27; messages that cost it with a number and then skip it (excluding messages about this analysis): 0.
 

@@ -9,10 +9,11 @@ I run a small game studio where most of the code is written by Claude agents. Wh
 against the data:
 - **Tasks planned to a token budget were small, but so were unbudgeted tasks on the same nights:** size followed the
   work, not the budget line (section 1).
-- **The planning itself has a cost**, and in the one case I could measure, it didn't come out ahead.
+- **The planning itself has a cost**, and in the one case I could measure, I can't tell whether it paid for itself.
 - **The plan priced its own cost accurately; its promised benefit wasn't confirmed** (section 2, n = 1). It promised a
-  24% saving, then 17%. The measured saving is at most about 4% and may be zero, and the baseline it is measured
-  against is itself a forecast. The planner cost 0.56M plan-equivalent tokens.
+  24% saving, then 17%. The split tasks cost at least 15% more than the plan forecast, and against the forecast for the
+  unsplit work the saving is at most about 4%. That baseline is itself a forecast: if it was about 5–8% too low, the
+  planner (0.56M plan-equivalent tokens) paid for itself.
 - **The estimate-correction loop I built didn't make estimates more reliable:** the agents didn't apply the correction
   they were given.
 - **A first check of agents' own claims** (section 8): "landed" matched the landing log 96% of the time. Every "checks
@@ -90,24 +91,26 @@ ran, so the same work can be compared with itself:
 | Pass 2: priced before the run vs measured after | Before | After |
 |---|---|---|
 | Architect's own cost | 150–250k reported (est.) | 180k reported = 0.56M plan-equivalent: **accurate** |
-| Saving on 9.3M of unsplit work | promised 2.2M (24%) before the run; 1.6M (17%) once the plan was written, by the same planning session | **at most about 0.41M (4%)**: the 9.3M estimate minus the measured 8.89M of 14 built tasks; with the 15th task at a typical pass-2 cost, between about −0.1M and +0.2M |
-| Net, after the architect's 0.56M | positive | **negative: about −0.15M at best** |
+| Cost of the split tasks | 7.7M, forecast by the plan | 8.89M measured for 14 of 15 tasks: **at least 15% over** |
+| Saving on 9.3M of unsplit work (itself a forecast) | promised 2.2M (24%) before the run; 1.6M (17%) once the plan was written, by the same planning session | **at most about 0.41M (4%)** against that forecast; with the 15th task at the other tasks' typical cost, between about −0.2M and +0.1M |
+| Net, after the architect's 0.56M | positive | **can't tell:** at best −0.16M against the forecast (−0.45M to −0.74M with the 15th task), but the pass breaks even if the unsplit work would really have cost 5–8% more than forecast |
 
 The plan priced its own cost well. Its benefit can't be confirmed: the "before" side (9.3M) is itself an agent
-forecast, and the studio's token forecasts are typically off by about 40% (section 6), which is far more than the
-0.41M difference. One planned task has no transcript, so even the 4% is an upper bound. What can be said: the
-measured cost of the built tasks didn't show the promised 17–24% saving, and the pass did not come out ahead of the
-architect's own cost.
+forecast, and an error of 5–8% in it is enough to flip the result. No forecast here has been shown to be that precise
+(per-task token errors ran 20–80%, section 6). One planned task has no transcript, so even the 4% is an upper bound.
+What can be said: the split tasks cost at least 15% more than the plan said they would, so the promised 17–24% saving
+didn't show. Whether the pass paid for its architect can't be told from this data.
 Later I skipped a planning pass because its cost looked about equal to the saving (owner-reported; no numbers were
 found in the logs).
 
 **Pass 1 points the other way.** It planned 35 parallel tasks for new code with a shared contract. Per landed commit,
 its tasks cost 0.20M plan-equivalent against 1.16M for the unplanned tasks between the two passes, about a sixth (only
-47 of its 63 tasks have a commit found). But there was no estimate written down beforehand, and era and task mix
-differ, so I treat it as **direction only**.
+47 of its 63 tasks have a commit found). A commit isn't a fixed unit of work, though: small planned tasks make small
+commits. There was also no estimate written down beforehand, and era and task mix differ, so I treat it as
+**direction only**.
 
 **A rule to test (hypothesis, n = 2):** run an architect pass only if the unsplit cost × the saving you can honestly
-expect is more than the architect's own cost. Pass 2 promised 17% and measured at most 4%; at 4%, the work would need
+expect is more than the architect's own cost. Pass 2 promised 17% and showed at most 4%; at 4%, the work would need
 to cost about 25 times the architect run. Below that, brief the tasks directly. A second hypothesis, from pass 1 alone:
 many parallel tasks on new code with a shared contract favour planning; few tasks on existing code with an obvious
 order favour skipping it.
@@ -115,7 +118,9 @@ order favour skipping it.
 **Limits:**
 - The planning conversation's own tokens and my review time aren't counted.
 - One planned task has no transcript, so the pass-2 result is a range, not a point.
-- Confidence: medium for pass 2, low for pass 1.
+- Cost per commit can't price the saving: pricing pass 2's 25 commits at the between-passes rate would put the unsplit
+  work at 29M, 3× the planning session's own forecast (package: finding 8).
+- Confidence: medium that the split tasks overran the plan; low on whether the pass paid for itself; low for pass 1.
 
 ## 3. Choosing a model per task: cheaper on half the task classes, not overall
 On Oct 26 the default moved from Opus (94% of the 709 tasks before) to Sonnet, with Opus by explicit override for
@@ -210,7 +215,7 @@ Two other overrides:
 - No decision changed after the step-5 report, so its effect is not measured.
 - Confidence: medium.
 
-## 5. Iterating in HTML mockups was about 24× cheaper per edit cycle (est.)
+## 5. HTML mockups: each check far cheaper, a whole round about the same cost
 | One edit cycle (median; cycles are stand-ins, est.) | Tokens | Minutes | Tool calls |
 |---|---|---|---|
 | In the game engine (n = 61 runs) | ~436k | ~21 | ~59 |
@@ -218,12 +223,13 @@ Two other overrides:
 
 No run labels its own cycles, so a cycle is a stand-in: an engine playtest, or a mockup click-test or scoring run. The
 two aren't the same size of work: an engine cycle usually follows an edit and a build, a mockup cycle is a cheap check.
-At the median, runs did 2 cycles in the engine and 13 in mockups: cheap cycles mean more of them. The ported results
-held live in 3 of 3 checked changes (one game).
+At the median, runs did 2 cycles in the engine and 13 in mockups: cheap cycles mean more of them.
+
+Per whole round, the gap mostly closes: a mockup round with its judge (about 160k tokens, n = 13) costs about the same
+as one engine verification run (about 188k, n = 9). So the mockups bought more checks per round, not a cheaper round.
+The ported results held live in 3 of 3 checked changes (one game).
 
 **Limits:**
-- Per whole round, the gap is much smaller: a mockup round with its judge (about 160k tokens, n = 13) costs about the
-  same as one engine verification run (about 188k, n = 9).
 - Per kept change, the mockup path costs about 164k, plus about 78k to port it to the engine (est.; the port side is
   understated).
 - Building the same change from scratch in the engine, and checks on real devices, were not measured.
@@ -357,7 +363,7 @@ technical leadership). The studio runs its product work as closed loops, and thi
 
 ## What I'd study next
 Across these findings, the least-checked signal is the agent's own claim, whether a forecast ("−24%", where at most
-−4% was measured), a report ("done"), or an instruction it was given ("apply the correction"). This sits between scalable oversight (can a cheaper checker
+−4% showed), a report ("done"), or an instruction it was given ("apply the correction"). This sits between scalable oversight (can a cheaper checker
 reliably supervise a stronger agent?) and AI control (which checks keep an agent safe when its own report is wrong?).
 I'd like to measure it properly:
 1. **Label claims against ground truth:** forecasts against measured cost, and "done" against git, the gate and later

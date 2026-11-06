@@ -17,7 +17,7 @@ period starts later. Re-running the scripts overwrites these files with tables f
 | (none) | 3 | Tasks cut from one architect plan compared with other tasks: tokens, restarts, rework | transcripts, git history |
 | 6 | 6 | Estimates vs actuals, and whether feeding results back into estimates helped | transcripts, ledger |
 | 7 | 7 | Guardrail (hook) refusals in the transcripts; landing-gate outcomes | transcripts, landing log |
-| 2 | 8 | Architect break-even: what a planning pass cost against what the split saved | transcripts, git history |
+| 2 | 8 | Architect break-even: what a planning pass cost against its plan's forecasts, and how far the forecast can be off before the result flips | transcripts, git history |
 | 8 | 9 | Did "done", "landed", "checks pass" and "verified" claims hold up? | transcripts, landing log, git history |
 | 6 (the fix) | 10 | The minutes fix (the ledger applies the published factor itself): estimate error before and after | transcripts, ledger |
 

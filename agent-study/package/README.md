@@ -5,8 +5,8 @@ a studio's own Claude Code transcripts, cost ledger, git history and landing log
 no transcript text, ids or task titles. Nothing is sent anywhere, and nothing is written outside `tables/`.
 
 [`tables/`](tables/) holds the output behind the write-up: runs cut at 2026-11-03T19:00Z with `RESIDENCY_UNTIL` (1,062 runs; the first line of each
-file states the cut, the ledger version and the count). `finding-10.md` has no cut (2026-11-05), since its after-fix
-period starts later. Re-running the scripts overwrites these files with tables from your own data.
+file states the cut, the ledger version and the count). `finding-10.md` is cut later, at 2026-11-06T00:26Z (1,098 runs),
+since its after-fix period starts on Nov 4. Re-running the scripts overwrites these files with tables from your own data.
 
 ## What it measures
 

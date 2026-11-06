@@ -33,7 +33,7 @@ well agents' claims ("this will save X", "done") match what is measured.
     `RESIDENCY_UNTIL` reproduces them). Section 6 uses its freeze, 2026-11-04 01:00 UTC; its after-fix numbers run to
     Nov 5.
   - Pass 1 planned 35 tasks; 63 tasks carried its budget in their briefs (section 1).
-  - The landing gate's 497 attempts are 410 landed + 56 failed checks + 27 merge conflicts + 4 with nothing to land
+  - The landing gate's 497 attempts are 410 landed + 56 failed checks + 27 merge conflicts + 3 with nothing to land + 1 dry run
     (section 7).
 - **Definitions:**
   - **Tokens** = input + output + cache writes (cache reads left out). **Agent-minutes** = the agent's own wall time.
@@ -271,7 +271,7 @@ change.
 | Whole-file reads over 400 lines, long dumps | 27 |
 | Landing gate: refused because a check failed (of 497 attempts) | 56 (11%) |
 
-The other gate attempts: 410 landed, 27 hit a merge conflict, 4 had nothing to land. There is no hook for "done with
+The other gate attempts: 410 landed, 27 hit a merge conflict, 3 had nothing to land, 1 was a dry run. There is no hook for "done with
 failing tests". The 56 gate refusals are the nearest measure: work an agent tried to land that didn't pass. Edits
 outside an agent's task are prevented, but nothing logs them, so they are **not measured**.
 

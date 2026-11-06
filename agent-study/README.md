@@ -30,8 +30,8 @@ well agents' claims ("this will save X", "done") match what is measured.
   git history (which dates each change) and the landing gate's log. A read-only script reproduces sections 1–3 and 6–8.
 - **Counts that look inconsistent but aren't:**
   - Sections 1–3, 7 and 8 use the runs that started before 2026-11-03 19:00 UTC (1,062 runs; the package's
-    `RESIDENCY_UNTIL` reproduces them). Section 6 uses its freeze, 2026-11-04 01:00 UTC; its after-fix numbers run to
-    Nov 5.
+    `RESIDENCY_UNTIL` reproduces them). Section 6's fix baseline uses the freeze, 2026-11-04 01:00 UTC; its
+    after-fix numbers run to Nov 5.
   - Pass 1 planned 35 tasks; 63 tasks carried its budget in their briefs (section 1).
   - The landing gate's 497 attempts are 410 landed + 56 failed checks + 27 merge conflicts + 3 with nothing to land + 1 dry run
     (section 7).
@@ -117,23 +117,40 @@ order favour skipping it.
 - One planned task has no transcript, so the pass-2 result is a range, not a point.
 - Confidence: medium for pass 2, low for pass 1.
 
-## 3. Choosing a model per task cut cost on most task classes, but not all
+## 3. Choosing a model per task: cheaper on half the task classes, not overall
 On Oct 26 the default moved from Opus (94% of the 709 tasks before) to Sonnet, with Opus by explicit override for
 design-heavy work (41% of the 313 tasks after).
 
 | Task class | n before / after | Median tokens before → after | Agent-minutes before → after |
 |---|---|---|---|
-| Tooling / editors | 47 / 29 | 334k → 207k (−38%) | 22.6 → 15.5 (−31%) |
-| Polish / UI | 28 / 26 | 236k → 146k (−38%) | 14.3 → 13.1 |
-| Fix pass | 53 / 22 | 138k → 112k (−19%) | 11.4 → 9.2 (−19%) |
+| Tooling / editors | 47 / 29 | 334k → 207k (−38%) | 22.6 → 15.5 |
+| Polish / UI | 29 / 26 | 246k → 146k (−41%) | 15.4 → 13.1 |
+| Fix pass | 53 / 22 | 138k → 112k (−19%) | 11.4 → 9.2 |
 | Research | 67 / 28 | 158k → 129k (−18%) | 9.6 → 10.8 |
-| **Feature in an existing system** | **403 / 182** | **206k → 261k (+27%)** | **11.2 → 22.2** |
+| Engine verify | 45 / 10 | 175k → 180k (+3%) | 21.6 → 15.7 |
+| Asset generation / art | 51 / 6 | 243k → 272k (+12%) | 15.5 → 23.3 |
+| Docs | 5 / 9 | 99k → 217k (small n) | 4.7 → 26.6 |
+| **Feature in an existing system** | **412 / 182** | **208k → 261k (+25%)** | **11.5 → 22.2** |
+| **All tasks** | **709 / 313** | **206k → 216k (+5%)** | **12.5 → 17.7 (+42%)** |
 
-Features got more expensive. The biggest builds were routed to Opus after the change, but Sonnet being slower on this
-work can't be ruled out.
+Overall, cost per task didn't fall and time per task rose. The rise sits in the tasks routed to Opus after the change:
 
-**Limits:** equal quality is **not shown**, because the rework score is near its ceiling (see Definitions). Opus got
-the harder tasks, so the per-model comparison isn't like for like. Confidence: medium on cost, low on quality.
+| After the change (era B) | n | Median tokens | Agent-minutes |
+|---|---|---|---|
+| Features on Sonnet | 98 | 157k | 14.4 |
+| Features on Opus | 84 | 549k | 41.3 |
+| All Sonnet tasks | 185 | 148k | 13.1 |
+| All Opus tasks | 128 | 467k | 35.2 |
+
+Sonnet tasks after the change were cheaper than the all-Opus tasks before (features: 157k against 208k). The Opus
+overrides went to the biggest, design-heavy builds, and those cost about 3.5× a Sonnet feature.
+
+**Limits:**
+- Equal quality is **not shown**, because the rework score is near its ceiling (see Definitions).
+- Opus got the harder tasks by design, so Sonnet against Opus isn't like for like, and the "before" era is earlier work
+  on different features.
+- Four classes got cheaper; three of the other four have small n after the change.
+- Confidence: medium that Sonnet tasks cost less; low on why the overall cost didn't fall.
 
 ## 4. A UI loop with a blind judge, a per-device check, and a human who can overrule both
 **The pipeline:**
@@ -216,28 +233,35 @@ held live in 3 of 3 checked changes (one game).
 I built a feedback loop to make agent estimates improve over time. On Oct 26 the studio's estimating guide published a
 measured correction (tokens ×0.76, minutes ×0.34). Agents were told to apply it to every new estimate.
 
-Measured, it didn't work:
-- **Tokens:** the median absolute error didn't fall, and the spread widened. Token overruns did fall, but because of
-  the work itself: the budget (section 1), smaller tasks and the switch to Sonnet (section 3). The multiplier played no
-  part.
+**Where the estimates came from.** Before Oct 26 the time "estimates" weren't written by agents: the ledger derived
+them from the token estimate (tokens ÷ 10k; all 38 in the first period, 41 of 43 in the second), and the ×0.34 was fit
+on that rule. Agents write their own time quotes only from Oct 26, when the estimate line arrived. So the minutes
+comparison below starts on Oct 26.
 
-  | Period | n | Token error (median, absolute) |
-  |---|---|---|
-  | Oct 19–20 (before the ledger tool) | 38 | 30% |
-  | Oct 20–26 (rolling ratios, no fixed factor) | 43 | 20% |
-  | Oct 26–29 (factors published, estimate line optional) | 51 | 80% |
-  | Oct 29 on (estimate line required) | 178 | 42% |
+| Period (to Nov 3, 19:00 UTC) | n | Token error | Tokens over 2× the estimate | Minutes bias | Minutes error |
+|---|---|---|---|---|---|
+| Oct 19–20 (before the ledger tool) | 38 | 30% | 0% | (rule) | (rule) |
+| Oct 20–26 (rolling ratios, no fixed factor) | 43 | 20% | 0% | (rule) | (rule) |
+| Oct 26–29 (factors published, estimate line optional) | 51 | 80% | 43% | 0.61 | **49%** |
+| Oct 29 on (estimate line required) | 176 | 42% | 10% | 0.37 | 64% |
 
-- **Minutes:** the bias stayed about 0.37: estimates are still about 2.7× too high, because the agents don't apply the
-  minutes factor they were given. On the frozen baseline below, applying it would cut the median error from 63% to 45%.
+Errors are medians of |actual − estimate| ÷ estimate. Measured, the loop didn't work:
+- **Minutes:** the first agent-written quotes (Oct 26–29) were the closest of any period, and applying ×0.34 to them
+  would have made them worse (85%); that would fit some writers already applying it then. From Oct 29, with the estimate
+  line required, the quotes ran about 2.7× too high (bias 0.37), and applying ×0.34 would have cut the error from 64%
+  to 44%. So from then on the factor wasn't being applied.
+- **Tokens:** error jumped when agents started writing their own estimates (Oct 26–29) and only partly recovered. That
+  period also had a different mix (69% Opus, 82% features, median estimate 400k), so the trend can't be pinned on the
+  correction either way. The ×0.76 token factor wouldn't have helped (42% before and after on the last period).
 - **The loop itself:** the correction was never revised after Oct 26, so the "feedback" part ran only once.
 
-This is another gap between an agent's stated behaviour and its measured behaviour. The briefs say the correction is
-applied; the numbers say it isn't.
+This is an instruction that wasn't followed, rather than a false claim: the estimate lines don't say whether the
+factor was applied.
 
 **Limits:**
 - Confounded with the Sonnet switch and the budget, which changed in the same weeks.
-- Confidence: high that the minutes factor isn't applied; medium on the token trend.
+- The Oct 26–29 period is 3 days with a different mix; it can't carry a trend on its own.
+- Confidence: high that the minutes factor wasn't applied from Oct 29; low on the token trend.
 
 **The fix (Nov 3; package: finding 10).** The minutes factor is now applied by the ledger when it records a run, not
 by the agent writing the brief. The quote as written is kept next to the corrected figure, so writers keep giving

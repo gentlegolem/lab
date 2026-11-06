@@ -11,7 +11,7 @@ const projectOf = (type, desc) => {
 };
 function taskIdOf(desc) {
 	const tok = String(desc || '').trim().split(/\s+/)[0] || '';
-	return /^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*$/.test(tok) ? tok : '';
+	return /^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*$/.test(tok) && /[0-9-]/.test(tok) ? tok : ''; // a bare word ("UI", "FIX") isn't an id
 }
 
 function classify(id, map = {}) {

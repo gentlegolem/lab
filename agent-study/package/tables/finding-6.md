@@ -1,10 +1,10 @@
-<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1045 tasks, 2026-10-10 to 2026-11-03 -->
+<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
 
 ### Finding 6
 
 | Set | n (tokens) | Tokens: actual / estimate, median (IQR) | n (minutes) | Minutes: actual / estimate, median (IQR) |
 | --- | --- | --- | --- | --- |
-| First sample, runs before 2026-10-22 (the 0.7 / 0.35 correction came from here) | 79 | 0.76 (0.64-0.93) | 79 | 0.34 (0.22-0.46) |
+| First sample, runs before 2026-10-22 (the x0.76 / x0.34 correction came from here) | 79 | 0.76 (0.64-0.93) | 79 | 0.34 (0.22-0.46) |
 | Runs from 2026-10-22 on | 229 | 0.94 (0.58-1.55) | 229 | 0.40 (0.24-0.62) |
 | Whole ledger, all tasks with an estimate | 308 | 0.86 (0.63-1.35) | 308 | 0.38 (0.23-0.58) |
 

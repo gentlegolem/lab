@@ -91,7 +91,12 @@ function scanFile(file) {
 		} catch (e) { /* not a message line */ }
 	}
 	const gateRuns = (txt.match(/"name":"(Bash|PowerShell)","input":\{"command":"[^"]*(check\.js|land\.js|heavy\.ps1|\.test\.|run-tests|--test|soak|smoke)/g) || []).length;
-	return { engine, finalText, gateRuns, limitEnd: LIMIT_RE.test(tail), id: path.basename(file).replace(/^agent-|\.jsonl$/g, '') };
+	// idle pauses: the longest gap between two messages, and the span with every gap capped at 10 minutes
+	const ts = []; for (const l of lines) { const m = l.match(TS_RE); if (m) { const t = Date.parse(m[1]); if (t) ts.push(t); } }
+	ts.sort((a, b) => a - b);
+	let maxGap = 0; let active = 0;
+	for (let i = 1; i < ts.length; i++) { const g = ts[i] - ts[i - 1]; maxGap = Math.max(maxGap, g); active += Math.min(g, 10 * 60000); }
+	return { engine, finalText, gateRuns, limitEnd: LIMIT_RE.test(tail), maxGapMin: maxGap / 60000, spanMin: ts.length > 1 ? (ts[ts.length - 1] - ts[0]) / 60000 : NaN, activeMin: ts.length > 1 ? active / 60000 : NaN, id: path.basename(file).replace(/^agent-|\.jsonl$/g, '') };
 }
 
 // free-text types from ESTIMATE lines ("feature", "fix", "analysis"...) -> the nine task types of the studio's estimating guide
@@ -137,6 +142,7 @@ function data() {
 			estMinRec: old ? num(old.est_minutes) : NaN, estMinRaw: old ? num(old.est_minutes_raw) : NaN,
 			taskType: canon((e && e.type) || (old && old.task_type), r.desc, id), cls: old && old.class ? old.class : L.classify(id),
 			cap150: CAP_RE.test(r.brief), seeded: !!(old && String(old.agent_id).startsWith('seed:')), engine: sc.engine, finalText: sc.finalText || '', gateRuns: sc.gateRuns || 0, limitEnd: sc.limitEnd,
+			maxGapMin: sc.maxGapMin || 0, spanMin: Number.isFinite(sc.spanMin) ? sc.spanMin : NaN, activeMin: Number.isFinite(sc.activeMin) ? sc.activeMin : NaN,
 			brief: r.brief || '',
 		});
 	}
@@ -206,7 +212,7 @@ function reworkMap() {
 
 // ---- finding 1: model per task ----
 function f1() {
-	const { tasks } = data();
+	const { tasks, runs } = data();
 	const rw = reworkMap();
 	const A = builds(tasks).filter((t) => t.ts < T.sonnetDefault);
 	const B = builds(tasks).filter((t) => t.ts >= T.sonnetDefault);
@@ -238,6 +244,9 @@ function f1() {
 	}
 	const share = (set, m) => `${set.filter((t) => t.model === m).length} of ${set.length}`;
 	o += `\nModel mix: era A Opus ${share(A, 'Opus')}, Sonnet ${share(A, 'Sonnet')}; era B Opus ${share(B, 'Opus')}, Sonnet ${share(B, 'Sonnet')}.\n`;
+	// agent-minutes are wall-clock spans (first to last message): how much idle pauses weigh
+	const rs = runs.filter((r) => !r.seeded);
+	o += `\nIdle pauses: ${rs.filter((r) => r.maxGapMin > 15).length} of ${rs.length} runs paused over 15 minutes between two messages (${rs.filter((r) => r.maxGapMin > 60).length} over an hour). Median minutes per run from the transcript timestamps: ${m1(med(rs.map((r) => r.spanMin)))} first to last message, ${m1(med(rs.map((r) => r.activeMin)))} with every pause capped at 10 minutes (agent-minutes as used in the tables: ${m1(med(rs.map((r) => r.minutes)))}).\n`;
 	return o;
 }
 
@@ -328,7 +337,7 @@ function f6() {
 		return row(nm, s.n, `${r2(s.tq[1])} (${r2(s.tq[0])}-${r2(s.tq[2])})`, s.mn.length, `${r2(med(mm))} (${r2(q(mm, 0.25))}-${r2(q(mm, 0.75))})`);
 	};
 	let o = head('Set', 'n (tokens)', 'Tokens: actual / estimate, median (IQR)', 'n (minutes)', 'Minutes: actual / estimate, median (IQR)') + '\n';
-	o += line('First sample, runs before 2026-10-22 (the 0.7 / 0.35 correction came from here)', ts.filter((t) => t.ts < cut)) + '\n';
+	o += line('First sample, runs before 2026-10-22 (the x0.76 / x0.34 correction came from here)', ts.filter((t) => t.ts < cut)) + '\n';
 	o += line('Runs from 2026-10-22 on', ts.filter((t) => t.ts >= cut)) + '\n';
 	o += line('Whole ledger, all tasks with an estimate', ts) + '\n';
 	o += '\n' + head('Task class (all dates)', 'n (tokens)', 'Tokens: actual / estimate, median (IQR)', 'n (minutes)', 'Minutes: actual / estimate, median (IQR)') + '\n';
@@ -658,8 +667,10 @@ function f9() {
 	out.push(`\nReports that say they did not verify in the engine (hedged): ${rep.filter((x) => x.c.hedged.engine).length} of ${rep.length}; reports claiming engine verification with no engine tool call in the run: ${rep.filter((x) => x.c.engine && x.r.engine === 0).length} of ${rep.filter((x) => x.c.engine).length}.`);
 	out.push(`Reports that claim landing but whose branch has no landed entry (checkable runs only): ${rep.filter((x) => x.c.landed && truth.landed(x) === false).length}. Reports that never mention landing although the branch landed: ${rep.filter((x) => !x.c.landed && truth.landed(x) === true).length} of ${rep.filter((x) => truth.landed(x) === true).length} landed.`);
 	const landedRuns = rep.filter((x) => truth.landed(x) === true && x.c.landed);
-	const ft = landedRuns.filter((x) => (landBy.get(x.r.id) || []).every((e) => e.result === 'landed' || e.result === 'nothing')).length;
-	out.push(`Of ${landedRuns.length} reports that claim landing and did land, ${ft} (${pct(ft, landedRuns.length)}) landed without a check-failed or conflict entry first (the claim was true, but the gate refused ${landedRuns.length - ft} of them at least once on the way).`);
+	// first try: no check-failed or conflict entry before the first landed one (a later re-land that hit a conflict doesn't count)
+	const refusedFirst = (x) => { const es = landBy.get(x.r.id) || []; const t0 = Math.min(...es.filter((e) => e.result === 'landed').map((e) => e.t)); return es.some((e) => e.t < t0 && (e.result === 'check-failed' || e.result === 'conflict')); };
+	const ft = landedRuns.filter((x) => !refusedFirst(x)).length;
+	out.push(`Of ${landedRuns.length} reports that claim landing and did land, ${ft} (${pct(ft, landedRuns.length)}) landed without a check-failed or conflict entry first (the claim was true, but the gate refused ${landedRuns.length - ft} of them at least once before they landed).`);
 	for (const days of [3, 7]) {
 		const M = evalMapDays(days);
 		out.push(`\n**C${days === 3 ? '' : '2'}. Did the work stay done? (${days} days after the task's last commit, on the files the task touched)**\n`);

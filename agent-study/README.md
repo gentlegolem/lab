@@ -26,7 +26,7 @@ well agents' claims ("this will save X", "done") match what is measured.
 - **The studio:** a coordinator agent splits the work, an architect agent plans large features, and specialist agents
   build in separate git worktrees. Every change goes through a landing gate that runs automated checks before merging.
   I make the decisions and review.
-- **The data:** 1,062 subagent runs (1,045 tasks), 2026-10-10 to 2026-11-03; one studio, one operator, one PC. It comes
+- **The data:** 1,062 subagent runs (1,054 tasks), 2026-10-10 to 2026-11-03; one studio, one operator, one PC. It comes
   from local Claude Code transcripts (tokens, time, tool calls, model, the brief with its estimate line), a cost ledger,
   git history (which dates each change) and the landing gate's log. A read-only script reproduces sections 1–3 and 6–8.
 - **Counts that look inconsistent but aren't:**
@@ -37,12 +37,15 @@ well agents' claims ("this will save X", "done") match what is measured.
   - The landing gate's 497 attempts are 410 landed + 56 failed checks + 27 merge conflicts + 3 with nothing to land + 1 dry run
     (section 7).
 - **Definitions:**
-  - **Tokens** = input + output + cache writes (cache reads left out). **Agent-minutes** = the agent's own wall time.
+  - **Tokens** = input + output + cache writes (cache reads left out). **Agent-minutes** = the agent's own wall time,
+    first message to last. Pauses aren't removed, but only 33 of 1,061 runs paused over 15 minutes, and capping every
+    pause at 10 minutes leaves the median at 14 minutes.
   - **Plan-equivalent tokens** = tokens + 10% of cache reads. Cache reads are most of the bill on long contexts, and
     short tasks re-read less, so they have to count somehow. The 10% is the weight the planning session used to price
     its plans, a convention, not a measured value.
-  - **Restart:** a second agent run under the same task id. A resume after a usage limit under a new id can't be seen,
-    so restart counts are a floor.
+  - **Restart:** a second agent run under the same task id in the same session. An id needs a digit or a hyphen
+    ("R4"), so a plain word like "UI" reused for two jobs doesn't join them. A resume after a usage limit under a new
+    id can't be seen, so restart counts are a floor.
   - **Fix-like commit:** a later commit on the same files whose message says fix, bug, verify or note, within 3 days.
     **Rework score:** 100 = no fix-like commit seen. After the landing gate arrived, most tasks score 97–100, so the
     score is "near its ceiling" and can't separate models or setups.
@@ -63,7 +66,7 @@ The 150k-token task maximum lived in the architect's plans and the briefs built 
 | Before pass 1 (no per-task budget) | 338 | 215k | 74% |
 | Pass 1 tasks | 63 | **101k** | **14%** |
 | Same nights, no budget in the brief | 54 | **90k** | **7%** |
-| Between the passes, no budget in the brief | 470 | 292k | 74% |
+| Between the passes, no budget in the brief | 479 | 304k | 75% |
 | Pass 2 tasks | 14 | **127k** | **21%** |
 | After pass 2, other tasks | 69 | 167k | 52% |
 
@@ -104,7 +107,7 @@ Later I skipped a planning pass because its cost looked about equal to the savin
 found in the logs).
 
 **Pass 1 points the other way.** It planned 35 parallel tasks for new code with a shared contract. Per landed commit,
-its tasks cost 0.20M plan-equivalent against 1.16M for the unplanned tasks between the two passes, about a sixth (only
+its tasks cost 0.20M plan-equivalent against 1.41M for the unplanned tasks between the two passes, about a seventh (only
 47 of its 63 tasks have a commit found). A commit isn't a fixed unit of work, though: small planned tasks make small
 commits. There was also no estimate written down beforehand, and era and task mix differ, so I treat it as
 **direction only**.
@@ -119,33 +122,33 @@ order favour skipping it.
 - The planning conversation's own tokens and my review time aren't counted.
 - One planned task has no transcript, so the pass-2 result is a range, not a point.
 - Cost per commit can't price the saving: pricing pass 2's 25 commits at the between-passes rate would put the unsplit
-  work at 29M, 3× the planning session's own forecast (package: finding 8).
+  work at 35M, 3.8× the planning session's own forecast (package: finding 8).
 - Confidence: medium that the split tasks overran the plan; low on whether the pass paid for itself; low for pass 1.
 
 ## 3. Choosing a model per task: cheaper on half the task classes, not overall
-On Oct 26 the default moved from Opus (94% of the 709 tasks before) to Sonnet, with Opus by explicit override for
-design-heavy work (41% of the 313 tasks after).
+On Oct 26 the default moved from Opus (94% of the 715 tasks before) to Sonnet, with Opus by explicit override for
+design-heavy work (41% of the 316 tasks after).
 
 | Task class | n before / after | Median tokens before → after | Agent-minutes before → after |
 |---|---|---|---|
-| Tooling / editors | 47 / 29 | 334k → 207k (−38%) | 22.6 → 15.5 |
-| Polish / UI | 29 / 26 | 246k → 146k (−41%) | 15.4 → 13.1 |
+| Tooling / editors | 52 / 29 | 347k → 207k (−40%) | 22.4 → 15.5 |
+| Polish / UI | 30 / 26 | 254k → 146k (−43%) | 15.9 → 13.1 |
 | Fix pass | 53 / 22 | 138k → 112k (−19%) | 11.4 → 9.2 |
 | Research | 67 / 28 | 158k → 129k (−18%) | 9.6 → 10.8 |
 | Engine verify | 45 / 10 | 175k → 180k (+3%) | 21.6 → 15.7 |
 | Asset generation / art | 51 / 6 | 243k → 272k (+12%) | 15.5 → 23.3 |
 | Docs | 5 / 9 | 99k → 217k (small n) | 4.7 → 26.6 |
-| **Feature in an existing system** | **412 / 182** | **208k → 261k (+25%)** | **11.5 → 22.2** |
-| **All tasks** | **709 / 313** | **206k → 216k (+5%)** | **12.5 → 17.7 (+42%)** |
+| **Feature in an existing system** | **412 / 185** | **208k → 267k (+28%)** | **11.5 → 23.1** |
+| **All tasks** | **715 / 316** | **208k → 217k (+4%)** | **12.8 → 18.1 (+41%)** |
 
 Overall, cost per task didn't fall and time per task rose. The rise sits in the tasks routed to Opus after the change:
 
 | After the change (era B) | n | Median tokens | Agent-minutes |
 |---|---|---|---|
 | Features on Sonnet | 98 | 157k | 14.4 |
-| Features on Opus | 84 | 549k | 41.3 |
+| Features on Opus | 87 | 556k | 41.8 |
 | All Sonnet tasks | 185 | 148k | 13.1 |
-| All Opus tasks | 128 | 467k | 35.2 |
+| All Opus tasks | 131 | 467k | 35.0 |
 
 Sonnet tasks after the change were cheaper than the all-Opus tasks before (features: 157k against 208k). The Opus
 overrides went to the biggest, design-heavy builds, and those cost about 3.5× a Sonnet feature.
@@ -181,7 +184,8 @@ overrides went to the biggest, design-heavy builds, and those cost about 3.5× a
 - duplicated controls.
 
 It cost about half the builder per round (55k vs 105k tokens, n = 13 rounds that logged both). Both rejections stood:
-those changes didn't ship.
+those changes didn't ship. That shows the loop was followed, not that the judge was right: nothing checked the
+rejected versions afterwards.
 
 **The override: repair before reject.** In one party-game round the judge called a change "better, small", which the
 loop counts as a miss. The per-device layout scores showed why: PC's score improved about 7% and tablet's about 3%,
@@ -211,6 +215,9 @@ Two other overrides:
   kept rounds, and one round split by device (PC preferred the current version). The leaky judges may have
   overstated how big the wins were: a hypothesis at n = 4, not a result. The re-judge reused the archived
   screenshots, its prompt gave less context than the originals, and the first round's leak was assumed, not proven.
+- Clean blinding is confirmed for 4 of the 19 rounds, the re-judged ones. The other 15 weren't audited for a leak.
+- The judge and the builders are the same model family (Claude), so a shared taste can't be ruled out. No judge from
+  another family was tried.
 - The phone fix after the override was scored by the tool, not re-judged, and my reason was written down afterwards.
 - No decision changed after the step-5 report, so its effect is not measured.
 - Confidence: medium.
@@ -320,21 +327,21 @@ precision isn't measured.
 
 The last two rows only show that a call was made, not that it passed: the record has no test or playtest output.
 
-- **"Landed" was nearly always true, but often not on the first try:** 268 of 319 (84%) landed with no refused or
-  conflicting attempt first. The gate turned 51 back at least once, and the reports rarely say so.
+- **"Landed" was nearly always true, but often not on the first try:** 270 of 319 (85%) landed with no refused or
+  conflicting attempt first. The gate turned 49 back at least once before they landed, and the reports rarely say so.
 - **"Checks pass" held every time it could be checked:** all 193 claims from runs that went through the gate matched
   its verdict. The other 309 claims come from runs that never went through the gate, or ran before its log started
   (Oct 24), so this record can't check them.
 - **Engine verification is rarely claimed:** 106 of 1,010 reports (10%) claim it; 323 (32%) say outright that
   nothing was checked in the engine (the brief template asks for that).
-- **Did the work stay done?** Of 360 runs with a closed 3-day window, 28% had no later fix-like commit on the same
-  files (100), 36% had material rework (131; fix lines at least 25% of the task's lines) and 36% a smaller later fix
-  (129; a fix-like commit, fix lines under 25%). The three groups don't overlap and cover all 360 runs. There
+- **Did the work stay done?** Of 369 runs with a closed 3-day window, 27% had no later fix-like commit on the same
+  files (101), 36% had material rework (133; fix lines at least 25% of the task's lines) and 37% a smaller later fix
+  (135; a fix-like commit, fix lines under 25%). The three groups don't overlap and cover all 369 runs. There
   were no reverts: the studio fixes forward, so read this as file churn, not as wrong claims. Shared-tools work stayed
-  done far more often (n = 66: 61% left alone, 8% material rework) than game work (n = 247: 21%, 38%); task mix and
+  done far more often (n = 66: 59% left alone, 9% material rework) than game work (n = 252: 21%, 37%); task mix and
   file churn differ, not necessarily care.
-- Claiming engine verification didn't predict a quieter next 3 days (24% left alone, against 34% for reports that
-  said they hadn't checked), but n is 38 and 129 and the tasks differ.
+- Claiming engine verification didn't predict a quieter next 3 days (26% left alone, against 34% for reports that
+  said they hadn't checked), but n is 39 and 133 and the tasks differ.
 
 **Limits:**
 - Patterns, not hand labels; precision not measured. The patterns were corrected after a review found sentences like

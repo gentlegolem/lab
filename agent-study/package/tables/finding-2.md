@@ -1,16 +1,16 @@
-<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1045 tasks, 2026-10-10 to 2026-11-03 -->
+<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
 
 ### Finding 2
 
 | Cohort (by planning pass) | n tasks | Median tokens | Over 150k | Restarted (>1 agent) | Ended on a usage limit | Median actual / estimate (n) | Rework sub-score (n) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0. Before pass 1 (2026-10-10 to 10-19), all Opus, no per-task budget | 338 | 215k | 250 (74%) | 0 | 0 | n/a (0) | 67 (56) |
+| 0. Before pass 1 (2026-10-10 to 10-19), all Opus, no per-task budget | 338 | 215k | 250 (74%) | 0 | 0 | n/a (0) | 69 (60) |
 | 1. Pass 1 tasks: night of 10-19/21, brief or plan states <= 150k | 63 | 101k | 9 (14%) | 6 | 2 | 0.74 (43) | 48 (47) |
 | 1x. Same days, no 150k statement | 54 | 90k | 4 (7%) | 0 | 0 | 0.81 (36) | 5 (21) |
-| 2a. Between the passes (10-21 to 10-31), briefs that state ~150k | 14 | 140k | 6 (43%) | 0 | 0 | 0.95 (11) | 100 (11) |
-| 2b. Between the passes, briefs with no 150k statement | 470 | 292k | 350 (74%) | 4 | 2 | 0.90 (135) | 97 (252) |
+| 2a. Between the passes (10-21 to 10-31), briefs that state ~150k | 14 | 140k | 6 (43%) | 0 | 0 | 0.95 (11) | 100 (12) |
+| 2b. Between the passes, briefs with no 150k statement | 479 | 304k | 359 (75%) | 0 | 2 | 0.90 (135) | 97 (264) |
 | 3. Pass 2 tasks (one architect plan, 15 tasks of ~150k, Sonnet builders) | 14 | 127k | 3 (21%) | 0 | 0 | 0.85 (14) | 97 (14) |
-| 4. After pass 2 (from 10-31 21:07 UTC), other tasks | 69 | 167k | 36 (52%) | 1 | 0 | 1.03 (69) | 99 (52) |
+| 4. After pass 2 (from 10-31 21:07 UTC), other tasks | 69 | 167k | 36 (52%) | 1 | 0 | 1.03 (69) | 99 (58) |
 
 | Wording of the budget in agent briefs | First seen (number of briefs) |
 | --- | --- |
@@ -23,7 +23,7 @@
 
 | Window | n tasks | with an estimate | Median estimate | Median actual tokens | Tasks over 150k actual | Restarted tasks (>1 agent) | Tasks ended by a usage limit |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| W0: before the config rule (before 2026-10-29 05:18 local) | 846 | 132 | 150k | 220k | 568 (67%) | 10 (1%) | 4 |
+| W0: before the config rule (before 2026-10-29 05:18 local) | 855 | 132 | 150k | 223k | 577 (67%) | 6 (1%) | 4 |
 | W1: hard 150k cap (66 minutes) | 2 | 2 | 85k | 115k | 1 (50%) | 0 (0%) | 0 |
 | W2: 150k is a warning only (from 2026-10-29 06:24 local) | 174 | 174 | 160k | 155k | 89 (51%) | 1 (1%) | 0 |
 

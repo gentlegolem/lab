@@ -1,4 +1,4 @@
-<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1045 tasks, 2026-10-10 to 2026-11-03 -->
+<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
 
 ### Finding 9
 
@@ -24,7 +24,7 @@ Runs with a final report: 1010 of 1061 transcript runs (2026-10-10 to 2026-11-03
 
 Reports that say they did not verify in the engine (hedged): 323 of 1010; reports claiming engine verification with no engine tool call in the run: 5 of 106.
 Reports that claim landing but whose branch has no landed entry (checkable runs only): 12. Reports that never mention landing although the branch landed: 8 of 327 landed.
-Of 319 reports that claim landing and did land, 268 (84%) landed without a check-failed or conflict entry first (the claim was true, but the gate refused 51 of them at least once on the way).
+Of 319 reports that claim landing and did land, 270 (85%) landed without a check-failed or conflict entry first (the claim was true, but the gate refused 49 of them at least once before they landed).
 
 **C. Did the work stay done? (3 days after the task's last commit, on the files the task touched)**
 
@@ -32,27 +32,27 @@ Strict = any later fix-like commit touched a file of the task; material = those 
 
 | group | runs with commits | closed window | no later fix (strict) | material rework | reverted | with a fix made outside an agent window |
 | --- | --- | --- | --- | --- | --- | --- |
-| game agent, all reports | 303 | 247 | 52 (21%) | 95 (38%) | 0 (0%) | 0 (0%) |
-| general agent, all reports | 49 | 47 | 8 (17%) | 31 (66%) | 0 (0%) | 0 (0%) |
-| shared-tools agent, all reports | 81 | 66 | 40 (61%) | 5 (8%) | 0 (0%) | 6 (9%) |
-| all reports | 433 | 360 | 100 (28%) | 131 (36%) | 0 (0%) | 6 (2%) |
-| reports claiming "landed" | 308 | 239 | 83 (35%) | 60 (25%) | 0 (0%) | 6 (3%) |
-| reports claiming "checks pass" | 230 | 182 | 45 (25%) | 67 (37%) | 0 (0%) | 6 (3%) |
-| reports claiming engine verification | 42 | 38 | 9 (24%) | 16 (42%) | 0 (0%) | 0 (0%) |
-| reports hedging the engine ("not seen") | 154 | 129 | 44 (34%) | 33 (26%) | 0 (0%) | 1 (1%) |
-| reports with no landed or checks claim | 79 | 77 | 11 (14%) | 46 (60%) | 0 (0%) | 0 (0%) |
+| game agent, all reports | 307 | 252 | 52 (21%) | 93 (37%) | 0 (0%) | 0 (0%) |
+| general agent, all reports | 53 | 51 | 10 (20%) | 34 (67%) | 0 (0%) | 0 (0%) |
+| shared-tools agent, all reports | 86 | 66 | 39 (59%) | 6 (9%) | 0 (0%) | 6 (9%) |
+| all reports | 446 | 369 | 101 (27%) | 133 (36%) | 0 (0%) | 6 (2%) |
+| reports claiming "landed" | 318 | 245 | 83 (34%) | 61 (25%) | 0 (0%) | 6 (2%) |
+| reports claiming "checks pass" | 237 | 189 | 44 (23%) | 70 (37%) | 0 (0%) | 6 (3%) |
+| reports claiming engine verification | 43 | 39 | 10 (26%) | 16 (41%) | 0 (0%) | 0 (0%) |
+| reports hedging the engine ("not seen") | 156 | 133 | 45 (34%) | 35 (26%) | 0 (0%) | 1 (1%) |
+| reports with no landed or checks claim | 80 | 78 | 12 (15%) | 45 (58%) | 0 (0%) | 0 (0%) |
 
 By task class (strict, 3 days; classes with fewer than 8 closed runs are pooled in "other"):
 
 | task class | runs with commits | closed window | no later fix (strict) | material rework | reverted | with a fix made outside an agent window |
 | --- | --- | --- | --- | --- | --- | --- |
-| asset generation / art | 14 | 12 | 4 (33%) | 2 (17%) | 0 (0%) | 0 (0%) |
+| asset generation / art | 13 | 11 | 4 (36%) | 2 (18%) | 0 (0%) | 0 (0%) |
 | engine verify | 15 | 12 | 3 (25%) | 6 (50%) | 0 (0%) | 0 (0%) |
-| feature in existing system | 258 | 223 | 54 (24%) | 83 (37%) | 0 (0%) | 4 (2%) |
-| fix pass | 33 | 30 | 11 (37%) | 11 (37%) | 0 (0%) | 1 (3%) |
-| polish / UI | 29 | 8 | 0 (0%) | 6 (75%) | 0 (0%) | 0 (0%) |
+| feature in existing system | 262 | 227 | 55 (24%) | 82 (36%) | 0 (0%) | 4 (2%) |
+| fix pass | 36 | 32 | 10 (31%) | 12 (38%) | 0 (0%) | 1 (3%) |
+| polish / UI | 32 | 9 | 0 (0%) | 7 (78%) | 0 (0%) | 0 (0%) |
 | research | 22 | 19 | 8 (42%) | 2 (11%) | 0 (0%) | 0 (0%) |
-| tooling / editors | 55 | 49 | 17 (35%) | 19 (39%) | 0 (0%) | 1 (2%) |
+| tooling / editors | 59 | 52 | 18 (35%) | 20 (38%) | 0 (0%) | 1 (2%) |
 | other (pooled) | 7 | 7 | 3 (43%) | 2 (29%) | 0 (0%) | 0 (0%) |
 
 **C2. Did the work stay done? (7 days after the task's last commit, on the files the task touched)**
@@ -61,12 +61,12 @@ Strict = any later fix-like commit touched a file of the task; material = those 
 
 | group | runs with commits | closed window | no later fix (strict) | material rework | reverted | with a fix made outside an agent window |
 | --- | --- | --- | --- | --- | --- | --- |
-| game agent, all reports | 303 | 125 | 18 (14%) | 59 (47%) | 0 (0%) | 0 (0%) |
-| general agent, all reports | 49 | 46 | 8 (17%) | 34 (74%) | 0 (0%) | 0 (0%) |
-| shared-tools agent, all reports | 81 | 28 | 17 (61%) | 2 (7%) | 0 (0%) | 0 (0%) |
-| all reports | 433 | 199 | 43 (22%) | 95 (48%) | 0 (0%) | 0 (0%) |
-| reports claiming "landed" | 308 | 84 | 29 (35%) | 23 (27%) | 0 (0%) | 0 (0%) |
-| reports claiming "checks pass" | 230 | 91 | 18 (20%) | 38 (42%) | 0 (0%) | 0 (0%) |
-| reports claiming engine verification | 42 | 32 | 4 (13%) | 19 (59%) | 0 (0%) | 0 (0%) |
-| reports hedging the engine ("not seen") | 154 | 58 | 17 (29%) | 20 (34%) | 0 (0%) | 0 (0%) |
-| reports with no landed or checks claim | 79 | 72 | 10 (14%) | 46 (64%) | 0 (0%) | 0 (0%) |
+| game agent, all reports | 307 | 132 | 21 (16%) | 63 (48%) | 0 (0%) | 0 (0%) |
+| general agent, all reports | 53 | 50 | 8 (16%) | 38 (76%) | 0 (0%) | 0 (0%) |
+| shared-tools agent, all reports | 86 | 27 | 17 (63%) | 2 (7%) | 0 (0%) | 0 (0%) |
+| all reports | 446 | 209 | 46 (22%) | 103 (49%) | 0 (0%) | 0 (0%) |
+| reports claiming "landed" | 318 | 92 | 32 (35%) | 27 (29%) | 0 (0%) | 0 (0%) |
+| reports claiming "checks pass" | 237 | 99 | 20 (20%) | 43 (43%) | 0 (0%) | 0 (0%) |
+| reports claiming engine verification | 43 | 33 | 4 (12%) | 20 (61%) | 0 (0%) | 0 (0%) |
+| reports hedging the engine ("not seen") | 156 | 61 | 19 (31%) | 22 (36%) | 0 (0%) | 0 (0%) |
+| reports with no landed or checks claim | 80 | 72 | 10 (14%) | 48 (67%) | 0 (0%) | 0 (0%) |

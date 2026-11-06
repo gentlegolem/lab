@@ -240,16 +240,19 @@ change.
 
 **First after-change numbers (preliminary, n = 26, Nov 4–5):**
 
-| Minutes estimates | n | Bias as written | Error as written | Error as recorded (×0.34 by the ledger) |
+| Minutes estimates | n | Bias as written | Error as written | Error with ×0.34 applied |
 |---|---|---|---|---|
-| Before the fix | 181 | 0.37 | 63% | 63% (no correction) |
-| After the fix | 26 | 0.27 | 74% | **38%** |
+| Before the fix | 181 | 0.37 | 63% | 45% (applied afterwards, for comparison) |
+| After the fix | 26 | 0.27 | 74% | 38% (applied by the ledger) |
 
-- The ledger applies the factor as designed (recorded ÷ written = 0.34 at the median), and the recorded error fell
-  from 63% to 38%.
-- The quotes as written got further off, not closer: the median quote rose from 40 to 55 minutes while the median
-  actual rose from 14 to 17. The mix moved too (Opus share 24% → 38%), so this is not yet a writer effect.
-- n is small; the final numbers come with the next data cut.
+- The ledger applies the factor as designed (recorded ÷ written = 0.34 on every task).
+- Like for like (×0.34 on both sides), the error is 45% before and 38% after; the difference is within the noise at
+  this n. The gain is the correction now being applied at all, not better estimates.
+- The 26 tasks come from 2 coordinator sessions over about 1.5 days, so the effective sample is much smaller than 26.
+  The same change added a reminder to brief writers not to pre-apply the factor, which also bears on the quotes.
+- The median quote rose from 40 to 55 minutes, but that is mix: Opus tasks were quoted much higher after the fix
+  (median 45 → 120) and also ran longer, while Sonnet quotes barely moved (35 → 37.5).
+- Preliminary; the final test (per model, by session, at a stated cut date) comes with the next data cut.
 
 
 ## 7. What the guardrails caught

@@ -7,17 +7,18 @@
 ## The short version
 I run a small game studio where most of the code is written by Claude agents. When I checked my own setup changes
 against the data:
-- **Planning tasks to a token budget kept them small.**
-- **The planning itself has a cost**, and in the one case I could measure cleanly, it came out about even, not ahead.
-- **The plan priced its own cost accurately, but overestimated its benefit 4–6×** (section 2, n = 1): it promised a 24%
-  saving, then 17%, and about 4% happened (a measured cost against an estimate written before the run). The planner
-  cost 0.56M plan-equivalent tokens; the saving was 0.41M (ratio 0.73).
+- **Tasks planned to a token budget were small, but so were unbudgeted tasks on the same nights:** size followed the
+  work, not the budget line (section 1).
+- **The planning itself has a cost**, and in the one case I could measure, it didn't come out ahead.
+- **The plan priced its own cost accurately; its promised benefit wasn't confirmed** (section 2, n = 1). It promised a
+  24% saving, then 17%. The measured saving is at most about 4% and may be zero, and the baseline it is measured
+  against is itself a forecast. The planner cost 0.56M plan-equivalent tokens.
 - **The estimate-correction loop I built didn't make estimates more reliable:** the agents didn't apply the correction
   they were given.
-- **A first check of agents' own claims** (section 8): "landed" matched the landing log 96% of the time, "checks pass"
-  82%.
+- **A first check of agents' own claims** (section 8): "landed" matched the landing log 96% of the time. Every "checks
+  pass" claim that went through the landing gate held; most never reached the gate, so they can't be checked this way.
 
-The agents' own forecasts were the least reliable number in the system. That is the question I'd like to study: how
+The agents' own forecasts were the least checked numbers in the system. That is the question I'd like to study: how
 well agents' claims ("this will save X", "done") match what is measured.
 
 ## Setup
@@ -28,9 +29,9 @@ well agents' claims ("this will save X", "done") match what is measured.
   from local Claude Code transcripts (tokens, time, tool calls, model, the brief with its estimate line), a cost ledger,
   git history (which dates each change) and the landing gate's log. A read-only script reproduces sections 1–3 and 6–8.
 - **Counts that look inconsistent but aren't:**
-  - Section 8 reads a later export (1,071 runs to Nov 4, of which 1,020 have a readable final report); the rest uses
-    the 1,062 runs to Nov 3. Re-running the scripts later gives slightly larger counts (1,077 runs on Nov 4) with the
-    same headline percentages.
+  - Sections 1–3, 7 and 8 use the runs that started before 2026-11-03 19:00 UTC (1,062 runs; the package's
+    `RESIDENCY_UNTIL` reproduces them). Section 6 uses its freeze, 2026-11-04 01:00 UTC; its after-fix numbers run to
+    Nov 5.
   - Pass 1 planned 35 tasks; 63 tasks carried its budget in their briefs (section 1).
   - The landing gate's 497 attempts are 410 landed + 56 failed checks + 27 merge conflicts + 4 with nothing to land
     (section 7).
@@ -48,7 +49,7 @@ well agents' claims ("this will save X", "done") match what is measured.
 - **The main limit:** this is observational data from one setup. Era, task mix and model choice changed together, and
   no task was replayed under a second condition.
 
-## 1. Tasks planned to a budget stayed small
+## 1. Budgeted tasks were small, and so were unbudgeted tasks on the same nights
 The 150k-token task maximum lived in the architect's plans and the briefs built from them, in two planning passes:
 - **Pass 1 (Oct 19):** 35 tasks for a new game slice, each "sized for one fresh agent", with briefs saying "aim for
   ≤ 150k tokens".
@@ -60,6 +61,7 @@ The 150k-token task maximum lived in the architect's plans and the briefs built 
 |---|---|---|---|
 | Before pass 1 (no per-task budget) | 338 | 215k | 74% |
 | Pass 1 tasks | 63 | **101k** | **14%** |
+| Same nights, no budget in the brief | 54 | **90k** | **7%** |
 | Between the passes, no budget in the brief | 470 | 292k | 74% |
 | Pass 2 tasks | 14 | **127k** | **21%** |
 | After pass 2, other tasks | 69 | 167k | 52% |
@@ -67,13 +69,18 @@ The 150k-token task maximum lived in the architect's plans and the briefs built 
 "Pass 1 tasks" are the 63 whose brief stated the budget on the nights of Oct 19–21: the 35 planned tasks plus follow-ups
 briefed the same way. Left out: 14 tasks between the passes that did state about 150k (median 140k, 43% over).
 
+The same-nights row is the nearest control: tasks briefed on the same nights without the budget line were smaller
+still. So small tasks went with the work of those nights (a new game slice, cut into pieces by a plan), not with the
+budget statement itself. Pass 2 is the one budgeted set with no same-night control.
+
 **Limits:**
 - The budgeted tasks were also the architect-planned ones, so "the budget" and "the planning" can't be separated.
+- The same-night control argues against the budget line having an effect of its own.
 - Restart counts are a floor (see Definitions).
 - Rework says nothing here, because pass 1 ran before the landing gate existed.
-- Confidence: medium-high on size.
+- Confidence: high that these tasks were small; low that the budget made them so.
 
-## 2. The architect isn't free, and the plan overpromised
+## 2. The architect isn't free, and its promised saving wasn't confirmed
 Cost here is in **plan-equivalent tokens** (see Definitions). Reported tokens alone mislead: the pass-2 plan was
 predicted to *raise* reported tokens (more agents, each paying a start-up cost) while cutting plan-equivalent cost.
 
@@ -83,12 +90,14 @@ ran, so the same work can be compared with itself:
 | Pass 2: priced before the run vs measured after | Before | After |
 |---|---|---|
 | Architect's own cost | 150–250k reported (est.) | 180k reported = 0.56M plan-equivalent: **accurate** |
-| Saving on 9.3M of unsplit work | promised 2.2M (24%) before the run; 1.6M (17%) once the plan was written, by the same planning session | **about 0.41M (4%)**: the 9.3M estimate minus the measured 8.89M of the built tasks |
-| Net, after the architect's 0.56M | positive | **about −0.16M** |
+| Saving on 9.3M of unsplit work | promised 2.2M (24%) before the run; 1.6M (17%) once the plan was written, by the same planning session | **at most about 0.41M (4%)**: the 9.3M estimate minus the measured 8.89M of 14 built tasks; with the 15th task at a typical pass-2 cost, between about −0.1M and +0.2M |
+| Net, after the architect's 0.56M | positive | **negative: about −0.15M at best** |
 
-The plan priced its own cost well but overestimated its benefit about 4–6× (24% ÷ 4% = 6; 17% ÷ 4% ≈ 4.3). The
-realised saving was a little smaller than the architect's cost (ratio 0.73), so the pass came out about even. The 4% is
-a measured cost subtracted from an estimate made beforehand, not two measurements, so treat it as approximate.
+The plan priced its own cost well. Its benefit can't be confirmed: the "before" side (9.3M) is itself an agent
+forecast, and the studio's token forecasts are typically off by about 40% (section 6), which is far more than the
+0.41M difference. One planned task has no transcript, so even the 4% is an upper bound. What can be said: the
+measured cost of the built tasks didn't show the promised 17–24% saving, and the pass did not come out ahead of the
+architect's own cost.
 Later I skipped a planning pass because its cost looked about equal to the saving (owner-reported; no numbers were
 found in the logs).
 
@@ -98,8 +107,8 @@ its tasks cost 0.20M plan-equivalent against 1.16M for the unplanned tasks betwe
 differ, so I treat it as **direction only**.
 
 **A rule to test (hypothesis, n = 2):** run an architect pass only if the unsplit cost × the saving you can honestly
-expect (4–17%, from pass 2) is more than the architect's own cost. For a pass like pass 2, that means work costing
-roughly 6–25 times the architect run. Below that, brief the tasks directly. A second hypothesis, from pass 1 alone:
+expect is more than the architect's own cost. Pass 2 promised 17% and measured at most 4%; at 4%, the work would need
+to cost about 25 times the architect run. Below that, brief the tasks directly. A second hypothesis, from pass 1 alone:
 many parallel tasks on new code with a shared contract favour planning; few tasks on existing code with an obvious
 order favour skipping it.
 
@@ -267,36 +276,41 @@ failing tests". The 56 gate refusals are the nearest measure: work an agent trie
 outside an agent's task are prevented, but nothing logs them, so they are **not measured**.
 
 ## 8. A first measurement: how often "done" held up (package: finding 9)
-This is a first, small measurement of the study I propose below, not the study. I read the final report of 1,020
-agent runs (of 1,071, Oct 10 to Nov 4; counts as of Nov 4) and checked each claim against the record: the landing log,
+This is a first, small measurement of the study I propose below, not the study. I read the final report of 1,010
+agent runs (of 1,061 transcript runs, Oct 10 to Nov 3 19:00 UTC) and checked each claim against the record: the landing log,
 the run's own tool calls, and git history. Claims were found by sentence patterns, not hand-labelled, so their
 precision isn't measured.
 
 | Claim in the report | Checked against | Checkable | Matched |
 |---|---|---|---|
-| Landed | a "landed" entry in the landing log | 339 | 325 (96%) |
-| Checks pass | the same entry (the gate runs the checks) | 234 | 193 (82%, a lower bound) |
-| Tests / soak pass | a test command appears in the run | 165 | call made in 150 |
-| Verified in the engine | an engine tool call appears in the run | 105 | call made in 100 |
+| Landed | a "landed" entry in the landing log | 331 | 319 (96%) |
+| Checks pass | the gate's verdict, for runs that went through the gate | 193 of 502 claims | 193 (100%) |
+| Tests / soak pass | a test command appears in the run | 177 | call made in 161 |
+| Verified in the engine | an engine tool call appears in the run | 106 | call made in 101 |
 
 The last two rows only show that a call was made, not that it passed: the record has no test or playtest output.
 
-- **"Landed" was nearly always true, but often not on the first try:** 274 of 325 (84%) landed with no refused or
+- **"Landed" was nearly always true, but often not on the first try:** 268 of 319 (84%) landed with no refused or
   conflicting attempt first. The gate turned 51 back at least once, and the reports rarely say so.
-- **"Checks pass" is the weakest checkable claim:** 82% matched the gate.
-- **Engine verification is rarely claimed:** 105 of 1,020 reports (10%) claim it; 324 (32%) say outright that
+- **"Checks pass" held every time it could be checked:** all 193 claims from runs that went through the gate matched
+  its verdict. The other 309 claims come from runs that never went through the gate, or ran before its log started
+  (Oct 24), so this record can't check them.
+- **Engine verification is rarely claimed:** 106 of 1,010 reports (10%) claim it; 323 (32%) say outright that
   nothing was checked in the engine (the brief template asks for that).
-- **Did the work stay done?** Of 371 runs with a closed 3-day window, 27% had no later fix-like commit on the same
-  files (100), 35% had material rework (129; fix lines at least 25% of the task's lines) and 38% a smaller later fix
-  (142; a fix-like commit, fix lines under 25%). The three groups don't overlap and cover all 371 runs. There
+- **Did the work stay done?** Of 360 runs with a closed 3-day window, 28% had no later fix-like commit on the same
+  files (100), 36% had material rework (131; fix lines at least 25% of the task's lines) and 36% a smaller later fix
+  (129; a fix-like commit, fix lines under 25%). The three groups don't overlap and cover all 360 runs. There
   were no reverts: the studio fixes forward, so read this as file churn, not as wrong claims. Shared-tools work stayed
-  done far more often (n = 67: 60% left alone, 7% material rework) than game work (n = 261: 21%, 36%); task mix and
+  done far more often (n = 66: 61% left alone, 8% material rework) than game work (n = 247: 21%, 38%); task mix and
   file churn differ, not necessarily care.
-- Claiming engine verification didn't predict a quieter next 3 days (21% left alone, against 33% for reports that
-  said they hadn't checked), but n is 39 and 133 and the tasks differ.
+- Claiming engine verification didn't predict a quieter next 3 days (24% left alone, against 34% for reports that
+  said they hadn't checked), but n is 38 and 129 and the tasks differ.
 
 **Limits:**
-- Patterns, not hand labels; precision not measured.
+- Patterns, not hand labels; precision not measured. The patterns were corrected after a review found sentences like
+  "0 failed" counted as hedges and "nothing landed yet" counted as a landed claim.
+- The agent sees the gate's own output before it writes "landed", so the 96% tests faithful reporting more than
+  judgment.
 - "Done" has no direct ground truth; the rework signal is the nearest.
 - No landing log before Oct 24; the newest tasks have open windows; one operator.
 
@@ -318,9 +332,8 @@ technical leadership). The studio runs its product work as closed loops, and thi
 - **Next:** tagging competitors' player feedback by feature, before and after their fixes.
 
 ## What I'd study next
-Across these findings, the least-checked signal is the agent's own claim, whether a forecast ("−24%", delivered about
-−4%), a report ("done"), or a stated behaviour ("correction applied"). The cost side of the same forecast was accurate,
-so the error isn't random: it sits on the benefit. This sits between scalable oversight (can a cheaper checker
+Across these findings, the least-checked signal is the agent's own claim, whether a forecast ("−24%", where at most
+−4% was measured), a report ("done"), or an instruction it was given ("apply the correction"). This sits between scalable oversight (can a cheaper checker
 reliably supervise a stronger agent?) and AI control (which checks keep an agent safe when its own report is wrong?).
 I'd like to measure it properly:
 1. **Label claims against ground truth:** forecasts against measured cost, and "done" against git, the gate and later
@@ -343,7 +356,7 @@ one operator.
 ## Data and code
 A read-only analysis package re-runs sections 1, 2, 3, 6, 7 and 8 from a studio's own Claude Code transcripts, cost
 ledger, git history and landing log. It prints only aggregate tables: no transcript text, ids or task titles (Node 18
-or newer, tested on 24; git on the PATH; no dependencies; about 7 minutes). Re-running it on newer transcripts gives
+or newer, tested on 24; git on the PATH; no dependencies; about 12 minutes). Re-running it on newer transcripts gives
 slightly larger counts than this note. Sections 4 and 5 read the studio's own UI round logs, so they aren't in it; the
 blinded re-judge method is (no screenshots or keys). This note uses "section" for its own order and "finding" for the
 package's:

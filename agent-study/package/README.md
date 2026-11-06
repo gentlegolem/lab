@@ -4,8 +4,9 @@ These are read-only analysis scripts for the [write-up](../README.md). They re-r
 a studio's own Claude Code transcripts, cost ledger, git history and landing log. They print aggregate tables only:
 no transcript text, ids or task titles. Nothing is sent anywhere, and nothing is written outside `tables/`.
 
-[`tables/`](tables/) holds the output behind the write-up: the run of 2026-11-04 (1,072 runs; the first line of each file
-states the count; `finding-10.md` is from 2026-11-05). Re-running the scripts overwrites these files with tables from your own data.
+[`tables/`](tables/) holds the output behind the write-up: runs cut at 2026-11-03T19:00Z with `RESIDENCY_UNTIL` (1,062 runs; the first line of each
+file states the cut, the ledger version and the count). `finding-10.md` has no cut (2026-11-05), since its after-fix
+period starts later. Re-running the scripts overwrites these files with tables from your own data.
 
 ## What it measures
 
@@ -60,11 +61,13 @@ set RESIDENCY_UNTIL=<end date, optional, e.g. 2026-11-10T00:00:00Z>
 node run-all.js
 ```
 Elsewhere, use `export` instead of `set`. `node run-all.js` writes `tables/finding-N.md` and overwrites them. It
-takes about 7 minutes (est.), because it streams every transcript. `node src/residency-findings.js 9` prints one
+streams every transcript once per finding: about 1.5 minutes per finding here, so about 12 minutes in all. `node src/residency-findings.js 9` prints one
 finding to stdout.
 
 `RESIDENCY_UNTIL` sets one end date for every input: runs that started before it, and commits, landing-log lines and
-hook refusals before it. Set it to a write-up's end date to reproduce its tables. `RESIDENCY_FIX_AT` (optional,
+hook refusals before it. Set it to a write-up's end date to reproduce its tables. The ledger itself isn't cut
+by date, because it can be rewritten later (a backfill, say): each table's first line gives the ledger's SHA-256, so a
+re-run can tell whether it read the same version. `RESIDENCY_FIX_AT` (optional,
 default 2026-11-04T01:00:00Z) is when the minutes fix of finding 10 took effect.
 
 It needs Node 18 or newer (tested on 24) and git on the PATH. There's no npm install and there are no dependencies.

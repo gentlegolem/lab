@@ -12,7 +12,7 @@ const STRONG = ['checks', 'land', 'rework', 'verify'];
 const THIN_N = 5;
 const REWORK_DAYS = 3;
 const WINDOW_LAG_MIN = 40; // a commit lands up to this long after its agent's last message
-const FIX_RE = /\b(fix\w*|hotfix|regress\w*|revert\w*|verify|retest|bugs?|note-[\w-]+|owner[- ]?notes?)\b/i;
+const FIX_RE = /\b(fix(es|ed|ing|up)?|hotfix|regress\w*|revert\w*|verify|retest|bugs?|note-[\w-]+|owner[- ]?notes?)\b/i;
 const NOISE_PATH = require('../config').noiseRe;
 const canonProject = (p) => p || '';
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : NaN);

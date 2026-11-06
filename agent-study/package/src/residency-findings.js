@@ -181,8 +181,8 @@ let COMMITS;
 function commitLog() {
 	if (COMMITS) return COMMITS;
 	const E = require('./lib/evals');
-	const txt = execFileSync('git', ['log', '--no-merges', '--format=%x01%H%x02%at%x02%s%x02%b%x03', '--numstat', '--no-renames', ...(Number.isFinite(UNTIL) ? [`--until=${new Date(UNTIL).toISOString()}`] : []), 'HEAD'], { cwd: REPO, encoding: 'utf8', maxBuffer: 1 << 29 });
-	COMMITS = E.parseGitLog(txt);
+	const txt = execFileSync('git', ['log', '--no-merges', '--format=%x01%H%x02%at%x02%s%x02%b%x03', '--numstat', '--no-renames', 'HEAD'], { cwd: REPO, encoding: 'utf8', maxBuffer: 1 << 29 });
+	COMMITS = E.parseGitLog(txt).filter((c) => before(c.t)); // author time, the same clock the metrics use
 	L.setTags(COMMITS.map((c) => (c.subject.match(/^\[(\w+)\]/) || [])[1]).filter(Boolean)); // commit tags = the project names
 	return COMMITS;
 }
@@ -558,14 +558,17 @@ const CLAIM_RE = {
 	tests: /\b(tests?|suite|soak|smoke|assertions?|syntax|eval)\b[^.\n]{0,60}\b(pass(es|ed)?|green|ok|clean|\d+\s*\/\s*\d+)\b/i,
 	engine: new RegExp(String.raw`\b(verified|confirmed|seen|playtest(ed)?|tested|clean console)\b[^.\n]{0,60}\b${C.engineWordRe}\b|\b${C.engineWordRe}\b[^.\n]{0,60}\b(verified|confirmed|clean|pass(ed)?|worked|ok)\b|\bplaytested\b`, 'i'),
 };
+const CLEAN_RE = /\b(no|0|zero)\s+(new\s+)?(errors?|warnings?|fail\w*|regressions?|issues?)\b|\bnone failed\b/gi;
+const NOT_LANDED = /\b(nothing|none|no|will|to be|ready to|once)\b[^.\n]{0,30}\blanded\b/i;
 const DONE_RE = /\b(done|complete[d]?|finished|implemented|fixed|added|built|wrote|written|created|changed|refactored|updated)\b/i;
 const PARTIAL_RE = /\b(blocked|stopped early|handing back|next stage|could not finish|couldn't finish|incomplete|not finished|not done|ran out)\b/i;
 function claimsOf(text) {
 	const c = { done: false, partial: false, landed: false, checks: false, tests: false, engine: false, hedged: {} };
 	const t = String(text || '').replace(/```[\s\S]*?```/g, ' ');
 	if (!t.trim()) return null;
-	for (const s of t.split(/(?<=[.!?])\s+|\n+|;\s+/)) {
-		for (const [kind, re] of Object.entries(CLAIM_RE)) if (re.test(s)) { if (NEG.test(s) || (kind === 'engine' && NEG_WIDE.test(s))) c.hedged[kind] = true; else c[kind] = true; }
+	for (const s0 of t.split(/(?<=[.!?])\s+|\n+|;\s+/)) {
+		const s = s0.replace(CLEAN_RE, ' clean ').replace(/\bstill (pass\w*)/gi, '$1'); // "0 failed", "no errors", "still pass" are positive
+		for (const [kind, re] of Object.entries(CLAIM_RE)) if (re.test(s)) { if (NEG.test(s) || (kind === 'engine' && NEG_WIDE.test(s)) || (kind === 'landed' && NOT_LANDED.test(s))) c.hedged[kind] = true; else c[kind] = true; }
 	}
 	c.partial = PARTIAL_RE.test(t);
 	c.done = !c.partial && (DONE_RE.test(t) || c.landed || c.checks || c.tests || c.engine);
@@ -634,7 +637,8 @@ function f9() {
 		},
 		checks: (x) => { // a landed entry means the landing gate (check.js on every game touched) passed on the final commit
 			if (x.r.ts < LANDLOG_START) return null;
-			return (landBy.get(x.r.id) || []).some((e) => e.result === 'landed');
+			const es = landBy.get(x.r.id) || [];
+			return es.length ? es.some((e) => e.result === 'landed') : null; // no gate attempt: not checkable
 		},
 		tests: (x) => x.r.gateRuns > 0, // a check / test / soak command appears in the run (output not parsed: weak)
 		engine: (x) => x.r.engine > 0, // an engine tool call appears in the run (not that the result was good: weak)
@@ -690,5 +694,6 @@ function f9() {
 const arg = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : 'all';
 const F = { 1: f1, 2: f2, 3: f3, 6: f6, 7: f7, 8: f8, 9: f9, 10: f10 };
 const { runs, tasks } = data();
-console.log(`<!-- ${runs.length} agent runs, ${tasks.length} tasks, ${dayOf(Math.min(...runs.map((r) => r.ts)))} to ${dayOf(Math.max(...runs.map((r) => r.ts)))} -->`);
+const ledgerHash = require('crypto').createHash('sha256').update(fs.readFileSync(LEDGER_FILE)).digest('hex').slice(0, 12);
+console.log(`<!-- cut ${Number.isFinite(UNTIL) ? new Date(UNTIL).toISOString() : 'none'}, ledger sha256 ${ledgerHash}, ${runs.length} agent runs, ${tasks.length} tasks, ${dayOf(Math.min(...runs.map((r) => r.ts)))} to ${dayOf(Math.max(...runs.map((r) => r.ts)))} -->`);
 for (const n of Object.keys(F)) if (arg === 'all' || arg === n) console.log(`\n### Finding ${n}\n\n${F[n]()}`);

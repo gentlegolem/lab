@@ -25,7 +25,7 @@ Measuring = data being collected · Reading = background research · Idea = not 
 ## What's here
 
 - [`agent-study/`](agent-study/): what one multi-agent coding studio measured about its own setup and its agents'
-  claims (draft). The re-runnable analysis package will go in [`agent-study/package/`](agent-study/package/).
+  claims (draft). The re-runnable analysis package is in [`agent-study/package/`](agent-study/package/).
 
 ## License
 

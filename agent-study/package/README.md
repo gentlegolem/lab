@@ -1,11 +1,11 @@
 # Analysis package: how Claude agents behaved in a small studio's pipeline
 
-These are read-only analysis scripts for the [write-up](../README.md). They re-run sections 1, 2, 3, 6, 7 and 8 from
+These are read-only analysis scripts for the [write-up](../README.md). They re-run sections 1, 2, 3, 6 (with the minutes fix), 7 and 8 from
 a studio's own Claude Code transcripts, cost ledger, git history and landing log. They print aggregate tables only:
 no transcript text, ids or task titles. Nothing is sent anywhere, and nothing is written outside `tables/`.
 
 [`tables/`](tables/) holds the output behind the write-up: the run of 2026-11-04 (1,072 runs; the first line of each file
-states the count). Re-running the scripts overwrites these files with tables from your own data.
+states the count; `finding-10.md` is from 2026-11-05). Re-running the scripts overwrites these files with tables from your own data.
 
 ## What it measures
 
@@ -18,6 +18,7 @@ states the count). Re-running the scripts overwrites these files with tables fro
 | 7 | 7 | Guardrail (hook) refusals in the transcripts; landing-gate outcomes | transcripts, landing log |
 | 2 | 8 | Architect break-even: what a planning pass cost against what the split saved | transcripts, git history |
 | 8 | 9 | Did "done", "landed", "checks pass" and "verified" claims hold up? | transcripts, landing log, git history |
+| 6 (the fix) | 10 | The minutes fix (the ledger applies the published factor itself): estimate error before and after | transcripts, ledger |
 
 Findings 4 (a fresh judge on UI rounds) and 5 (game engine vs web mockups) read the studio's own UI round logs, so
 they aren't in this package. `rejudge/` holds the method of the blinded re-judge used for finding 4, without data.
@@ -31,7 +32,8 @@ they aren't in this package. `rejudge/` holds the method of the blinded re-judge
    `ESTIMATE: <min> agent-min, <N>k tokens, type <class>` is read as the task's estimate.
 2. **Ledger CSV** (`RESIDENCY_LEDGER`, required): columns `agent_id, date, session, task_id, project, class, model,
    requested_model, calls, minutes, reported, incl_cache, est_tokens, est_minutes, task_type, note, agent_type,
-   brief_chars, skills, instr`. Rows whose `agent_id` starts with `seed:` were entered by hand and have no transcript.
+   brief_chars, skills, instr`, and for finding 10 `est_minutes_raw` (the quote as written; `est_minutes` is then
+   the corrected figure). Rows whose `agent_id` starts with `seed:` were entered by hand and have no transcript.
 3. **Git checkout** (`RESIDENCY_REPO`): commit subjects start with a tag in brackets (`[Tag] message`), and an
    agent's branch is `worktree-agent-<id>`. Used for the rework and revert signals.
 4. **Landing log** (`RESIDENCY_LAND_LOG`, optional): tab-separated lines `<ISO time>\t<branch>\t<result>\t<extra>`,
@@ -54,11 +56,16 @@ set RESIDENCY_REPO=<git checkout>
 set RESIDENCY_LEDGER=<ledger.csv>
 set RESIDENCY_LAND_LOG=<landing log>
 set RESIDENCY_CONFIG=<settings.json>
+set RESIDENCY_UNTIL=<end date, optional, e.g. 2026-11-10T00:00:00Z>
 node run-all.js
 ```
 Elsewhere, use `export` instead of `set`. `node run-all.js` writes `tables/finding-N.md` and overwrites them. It
 takes about 7 minutes (est.), because it streams every transcript. `node src/residency-findings.js 9` prints one
 finding to stdout.
+
+`RESIDENCY_UNTIL` sets one end date for every input: runs that started before it, and commits, landing-log lines and
+hook refusals before it. Set it to a write-up's end date to reproduce its tables. `RESIDENCY_FIX_AT` (optional,
+default 2026-11-04T01:00:00Z) is when the minutes fix of finding 10 took effect.
 
 It needs Node 18 or newer (tested on 24) and git on the PATH. There's no npm install and there are no dependencies.
 `RESIDENCY_REPO` must be a real checkout. It's a heavy job: run it alone, at low priority.
@@ -94,7 +101,9 @@ The key (which side is which) is kept apart from the packets. The judge answers 
 - Rework means fix-like commits (words such as fix, verify, note, bug) on the same files. In a studio that fixes
   forward and iterates daily on the same files, it measures churn as much as error.
 - Windows still open for the newest tasks are left out of the rates.
-- Re-running on newer transcripts gives slightly larger counts than the write-up. That's expected, not a bug.
+- Re-running on newer transcripts gives larger counts than the write-up, unless `RESIDENCY_UNTIL` is set to its end
+  date.
+- Finding 10 compares two periods; task mix and model share can differ between them (its mix table shows by how much).
 
 ## License
 

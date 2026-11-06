@@ -236,8 +236,20 @@ their honest judgment and nothing is corrected twice. The tokens factor is not a
 error. Baseline before the change (frozen Nov 3 at 8 pm Montreal time, 2026-11-04 01:00 UTC; tasks with a required
 estimate line, n = 181): minutes bias 0.37, median error 63% as written; applying ×0.34 to those tasks gives 45%. (All
 tasks before the change: n = 313, bias 0.38, error 63%; 46% with ×0.34.) The test is whether the quotes as written
-change. The ledger file itself stops at Oct 26 (the transcripts continue), so after-change numbers depend on it
-recording again.
+change.
+
+**First after-change numbers (preliminary, n = 26, Nov 4–5):**
+
+| Minutes estimates | n | Bias as written | Error as written | Error as recorded (×0.34 by the ledger) |
+|---|---|---|---|---|
+| Before the fix | 181 | 0.37 | 63% | 63% (no correction) |
+| After the fix | 26 | 0.27 | 74% | **38%** |
+
+- The ledger applies the factor as designed (recorded ÷ written = 0.34 at the median), and the recorded error fell
+  from 63% to 38%.
+- The quotes as written got further off, not closer: the median quote rose from 40 to 55 minutes while the median
+  actual rose from 14 to 17. The mix moved too (Opus share 24% → 38%), so this is not yet a writer effect.
+- n is small; the final numbers come with the next data cut.
 
 
 ## 7. What the guardrails caught
@@ -343,4 +355,4 @@ package's:
 | Section 8. "Done" claims | finding 9 |
 
 
-The package will be in [`package/`](package/) once it is cleared for release.
+The package is in [`package/`](package/).

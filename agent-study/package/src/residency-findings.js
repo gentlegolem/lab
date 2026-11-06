@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // Read-only analysis of how Claude models behaved in an agent pipeline (see ../README.md).
-// Usage:  node src/residency-findings.js [finding|all]      finding = 1 | 2 | 3 | 6 | 7 | 8 | 9 (default all). Prints markdown tables to stdout; writes nothing.
+// Usage:  node src/residency-findings.js [finding|all]      finding = 1 | 2 | 3 | 6 | 7 | 8 | 9 | 10 (default all). Prints markdown tables to stdout; writes nothing.
 // Inputs (arguments are environment variables, nothing is hard-coded):
 //   RESIDENCY_TRANSCRIPTS  folder of Claude Code sessions: <dir>/<session>/subagents/agent-*.jsonl (+ agent-*.meta.json), default ~/.claude/projects/<one project>
 //   RESIDENCY_REPO         a git checkout of the studio's repository (commit history for the rework signal), default the current folder
 //   RESIDENCY_LEDGER       the estimate ledger CSV (required)
 //   RESIDENCY_LAND_LOG     the landing log (tab-separated: iso, branch, result, extra); optional, the gate rows are empty without it
+//   RESIDENCY_UNTIL        optional end date (ISO, e.g. 2026-11-10T00:00:00Z): every finding uses only data from before it
 //   RESIDENCY_CONFIG       optional JSON of studio-specific settings (see src/config.js and config.example.json)
 // Only aggregate numbers are printed: no transcript text, no ids.
 const fs = require('fs');
@@ -20,6 +21,13 @@ const C = require('./config');
 const LEDGER_FILE = process.env.RESIDENCY_LEDGER;
 if (!LEDGER_FILE) { console.error('Set RESIDENCY_LEDGER to the estimate ledger CSV (see README.md).'); process.exit(1); }
 const LAND_LOG = process.env.RESIDENCY_LAND_LOG || '';
+// one end date for every data source (runs by start time, ledger seed rows, commits, landing log, hook refusals)
+const UNTIL = process.env.RESIDENCY_UNTIL ? Date.parse(process.env.RESIDENCY_UNTIL) : Infinity;
+if (Number.isNaN(UNTIL)) { console.error('RESIDENCY_UNTIL is not a date: ' + process.env.RESIDENCY_UNTIL); process.exit(1); }
+const before = (ms) => !(ms >= UNTIL);
+const TS_RE = /"timestamp":"([^"]+)"/;
+const lineBefore = (line) => { const m = line.match(TS_RE); return !m || before(Date.parse(m[1])); };
+const landText = () => (LAND_LOG && fs.existsSync(LAND_LOG) ? fs.readFileSync(LAND_LOG, 'utf8').split('\n').filter((l) => l && before(Date.parse(l.split('\t')[0]))).join('\n') : '');
 const isPass2 = (t) => C.pass2Re.test(t.taskId || '');
 
 // ---- dated rule changes (commit author dates, converted to UTC; edit for another studio) ----
@@ -112,7 +120,7 @@ function data() {
 	const byId = new Map(ledger.map((r) => [r.agent_id, r]));
 	const runs = [];
 	for (const r of loadRuns({ since: 0 })) {
-		if (!r.first || READONLY.includes(r.type)) continue;
+		if (!r.first || !before(r.first) || READONLY.includes(r.type)) continue;
 		const models = (r.models || []).filter((m) => m !== '<synthetic>');
 		if (!models.length || !r.toolCalls) continue;
 		const id = L.taskIdOf(r.desc);
@@ -126,6 +134,7 @@ function data() {
 			model: /opus/.test(models[0]) ? 'Opus' : /sonnet/.test(models[0]) ? 'Sonnet' : /haiku/.test(models[0]) ? 'Haiku' : models[0],
 			requested: r.requestedModel || '', reported: r.input + r.output + r.cacheWrite, inclCache: r.input + r.output + r.cacheWrite + r.cacheRead,
 			minutes: r.minutes, calls: r.toolCalls, estTok, estMin, briefEst: !!e,
+			estMinRec: old ? num(old.est_minutes) : NaN, estMinRaw: old ? num(old.est_minutes_raw) : NaN,
 			taskType: canon((e && e.type) || (old && old.task_type), r.desc, id), cls: old && old.class ? old.class : L.classify(id),
 			cap150: CAP_RE.test(r.brief), seeded: !!(old && String(old.agent_id).startsWith('seed:')), engine: sc.engine, finalText: sc.finalText || '', gateRuns: sc.gateRuns || 0, limitEnd: sc.limitEnd,
 			brief: r.brief || '',
@@ -142,7 +151,7 @@ function data() {
 		if (o.class) r.cls = o.class;
 	}
 	for (const o of ledger) {
-		if (!String(o.agent_id).startsWith('seed:') || haveIds.has(o.task_id)) continue; // a seed row whose task also has a transcript is the same run
+		if (!String(o.agent_id).startsWith('seed:') || haveIds.has(o.task_id) || !before(Date.parse(o.date))) continue; // a seed row whose task also has a transcript is the same run
 		runs.push({ id: o.agent_id, session: o.session, taskId: o.task_id, desc: o.note, type: '', ts: Date.parse(o.date), model: 'Opus', requested: '',
 			reported: num(o.reported), inclCache: num(o.incl_cache), minutes: num(o.minutes), calls: num(o.calls), estTok: num(o.est_tokens), estMin: num(o.est_minutes),
 			cap150: true, briefEst: false, taskType: o.task_type || L.taskType(o.note, o.task_id), cls: o.class, seeded: true, engine: 0, limitEnd: false, brief: '' });
@@ -151,10 +160,11 @@ function data() {
 	const tasks = new Map();
 	for (const r of runs.sort((a, b) => a.ts - b.ts)) {
 		const key = r.taskId ? `${r.session}|${r.taskId}` : r.id;
-		const t = tasks.get(key) || { key, runs: [], ts: r.ts, model: r.model, taskType: r.taskType, cls: r.cls, taskId: r.taskId, estTok: NaN, estMin: NaN };
+		const t = tasks.get(key) || { key, runs: [], ts: r.ts, model: r.model, taskType: r.taskType, cls: r.cls, taskId: r.taskId, estTok: NaN, estMin: NaN, estMinRec: NaN, estMinRaw: NaN };
 		t.runs.push(r);
 		if (Number.isFinite(r.estTok)) t.estTok = Math.max(Number.isFinite(t.estTok) ? t.estTok : 0, r.estTok);
 		if (Number.isFinite(r.estMin)) t.estMin = Math.max(Number.isFinite(t.estMin) ? t.estMin : 0, r.estMin);
+		for (const kk of ['estMinRec', 'estMinRaw']) if (Number.isFinite(r[kk])) t[kk] = Math.max(Number.isFinite(t[kk]) ? t[kk] : 0, r[kk]);
 		tasks.set(key, t);
 	}
 	const T2 = [...tasks.values()].map((t) => ({
@@ -171,7 +181,7 @@ let COMMITS;
 function commitLog() {
 	if (COMMITS) return COMMITS;
 	const E = require('./lib/evals');
-	const txt = execFileSync('git', ['log', '--no-merges', '--format=%x01%H%x02%at%x02%s%x02%b%x03', '--numstat', '--no-renames', 'HEAD'], { cwd: REPO, encoding: 'utf8', maxBuffer: 1 << 29 });
+	const txt = execFileSync('git', ['log', '--no-merges', '--format=%x01%H%x02%at%x02%s%x02%b%x03', '--numstat', '--no-renames', ...(Number.isFinite(UNTIL) ? [`--until=${new Date(UNTIL).toISOString()}`] : []), 'HEAD'], { cwd: REPO, encoding: 'utf8', maxBuffer: 1 << 29 });
 	COMMITS = E.parseGitLog(txt);
 	L.setTags(COMMITS.map((c) => (c.subject.match(/^\[(\w+)\]/) || [])[1]).filter(Boolean)); // commit tags = the project names
 	return COMMITS;
@@ -187,7 +197,7 @@ function reworkMap() {
 			project: L.projectOf(r.type, r.desc), class: r.cls, model: r.model, requested_model: r.requested, calls: r.calls, minutes: String(r.minutes), reported: r.reported,
 			incl_cache: r.inclCache, est_tokens: r.estTok, est_minutes: r.estMin, task_type: r.taskType, note: r.desc, agent_type: r.type, brief_chars: r.brief.length, skills: '', instr: '' }));
 		const lp = LAND_LOG;
-		const landLog = fs.existsSync(lp) ? E.parseLandLog(fs.readFileSync(lp, 'utf8')) : [];
+		const landLog = E.parseLandLog(landText());
 		const tasks = E.evaluate({ rows, commits: commitLog(), landLog, notes: [], verifyLines: [], days: 3 });
 		for (const t of tasks) for (const a of t.agents || []) RW.set(a, t);
 	} catch (e) { console.error('rework map failed:', e.message); }
@@ -385,6 +395,34 @@ function f6trend() {
 	return o;
 }
 
+// ---- finding 10: the minutes fix (Nov 3): the ledger applies x0.34 when it records a run; the quote as written is kept ----
+// Baseline = tasks with a required estimate line (from 2026-10-29 09:18Z) up to the fix; after = from the fix on.
+// "As written" = the quote in the brief (what the agent wrote); "as recorded" = the ledger's corrected figure.
+const FIX10 = Date.parse(process.env.RESIDENCY_FIX_AT || '2026-11-04T01:00:00Z');
+function f10() {
+	const { tasks } = data();
+	const ts = builds(tasks).filter((t) => t.estMin > 0 && t.minutes > 0);
+	const ape = (xs) => (xs.length ? Math.round(100 * med(xs.map((x) => Math.abs(x - 1)))) + '%' : 'n/a');
+	const w = (xs) => `${r2(med(xs))} (${r2(q(xs, 0.25))}-${r2(q(xs, 0.75))})`;
+	const sets = [['Baseline: estimate line required, before the fix', ts.filter((t) => t.ts >= EST_PERIODS[3][1] && t.ts < FIX10)],
+		['After the fix', ts.filter((t) => t.ts >= FIX10)]];
+	let o = `Fix applied from ${new Date(FIX10).toISOString().slice(0, 16)}Z. Tasks of 5+ tool calls with a minutes estimate and measured minutes.\n\n`;
+	o += head('Set', 'n', 'Bias as written (median actual / quote, IQR)', 'Error as written (median abs)', 'Error if x0.34 applied', 'n with a recorded figure', 'Error as recorded by the ledger') + '\n';
+	for (const [nm, set] of sets) {
+		const a = set.map((t) => t.minutes / t.estMin);
+		const rec = set.filter((t) => t.estMinRec > 0);
+		o += row(nm, set.length, w(a), ape(a), ape(a.map((x) => x / 0.34)), rec.length, ape(rec.map((t) => t.minutes / t.estMinRec))) + '\n';
+	}
+	const chk = sets[1][1].filter((t) => t.estMinRec > 0 && t.estMin > 0);
+	o += `\nCheck that the ledger applied the factor (after the fix): median recorded / written = ${r2(med(chk.map((t) => t.estMinRec / t.estMin)))} (n ${chk.length}; 0.34 expected).\n`;
+	o += '\n' + head('Mix (could a change in task mix explain a movement?)', 'tasks', 'Sonnet share', 'Opus share', 'Feature-in-existing-system share', 'Median quote (min)', 'Median actual (min)') + '\n';
+	for (const [nm, set] of sets) {
+		const sh = (fn) => pct(set.filter(fn).length, set.length);
+		o += row(nm, set.length, sh((t) => t.model === 'Sonnet'), sh((t) => t.model === 'Opus'), sh((t) => /^feature/i.test(t.taskType)), m1(med(set.map((t) => t.estMin))), m1(med(set.map((t) => t.minutes)))) + '\n';
+	}
+	return o;
+}
+
 // read a big transcript in 32 MB chunks (the main-session logs are hundreds of MB: too big for one string)
 function eachLine(file, cb) {
 	const fd = fs.openSync(file, 'r');
@@ -421,7 +459,7 @@ function f7() {
 	for (const f of files) {
 		if (seen.has(f)) continue; seen.add(f);
 		eachLine(f, (line) => {
-			if (!line.includes('hook') || !line.includes('tool_result') || !line.includes('"type":"user"')) return; // only the tool's reply, not a copy of the rule text
+			if (!line.includes('hook') || !line.includes('tool_result') || !line.includes('"type":"user"') || !lineBefore(line)) return; // only the tool's reply, not a copy of the rule text
 			pats.forEach((pt, i) => { if (HOOK_PREFIX.test(line) && pt[1].test(line)) counts[i]++; });
 		});
 	}
@@ -433,7 +471,7 @@ function f7() {
 	try {
 		const E = require('./lib/evals');
 		const lp = LAND_LOG;
-		if (fs.existsSync(lp)) landTxt = fs.readFileSync(lp, 'utf8');
+		landTxt = landText();
 	} catch (e) { /* no log on this PC */ }
 	const st = {};
 	for (const l of landTxt.split('\n').filter(Boolean)) { const s = l.split('\t')[2] || '?'; st[s] = (st[s] || 0) + 1; }
@@ -499,7 +537,7 @@ function f8() {
 			eachLine(path.join(ROOT, s), (line) => {
 				if (!/architect|planning pass|plan pass|plan agent/i.test(line)) return;
 				let j; try { j = JSON.parse(line); } catch (e) { return; }
-				if (j.type !== 'assistant' || Date.parse(j.timestamp) < Date.parse('2026-10-27T00:00:00Z')) return;
+				if (j.type !== 'assistant' || Date.parse(j.timestamp) < Date.parse('2026-10-27T00:00:00Z') || !before(Date.parse(j.timestamp))) return;
 				const txt = ((j.message || {}).content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n');
 				msgs++;
 				if (SKIP.test(txt) && NUM.test(txt) && !/finding 8|break-even|HQ/i.test(txt)) hits.push(j.timestamp.slice(0, 16));
@@ -544,7 +582,7 @@ function evalMapDays(days) {
 		project: L.projectOf(r.type, r.desc), class: r.cls, model: r.model, requested_model: r.requested || '', calls: r.calls, minutes: String(r.minutes), reported: r.reported,
 		incl_cache: r.inclCache, est_tokens: r.estTok, est_minutes: r.estMin, task_type: r.taskType, note: r.desc, agent_type: r.type, brief_chars: r.brief.length, skills: '', instr: '' }));
 	const lp = LAND_LOG;
-	const landLog = fs.existsSync(lp) ? E.parseLandLog(fs.readFileSync(lp, 'utf8')) : [];
+	const landLog = E.parseLandLog(landText());
 	const commits = commitLog();
 	const tasks = E.evaluate({ rows, commits, landLog, notes: [], verifyLines: [], days });
 	const bySha = new Map(commits.map((c) => [c.sha.slice(0, 8), c]));
@@ -574,7 +612,7 @@ function f9() {
 	const LANDLOG_START = Date.parse('2026-10-24T00:00:00Z');
 	const E = require('./lib/evals');
 	const lp = LAND_LOG;
-	const landLog = fs.existsSync(lp) ? E.parseLandLog(fs.readFileSync(lp, 'utf8')) : [];
+	const landLog = E.parseLandLog(landText());
 	const landBy = new Map();
 	for (const e of landLog) { const id = String(e.branch).replace(/^worktree-agent-/, ''); (landBy.get(id) || landBy.set(id, []).get(id)).push(e); }
 	const rep = runs.filter((r) => !r.seeded && r.finalText).map((r) => ({ r, c: claimsOf(r.finalText), role: roleOf(r.type) })).filter((x) => x.c);
@@ -650,7 +688,7 @@ function f9() {
 }
 
 const arg = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : 'all';
-const F = { 1: f1, 2: f2, 3: f3, 6: f6, 7: f7, 8: f8, 9: f9 };
+const F = { 1: f1, 2: f2, 3: f3, 6: f6, 7: f7, 8: f8, 9: f9, 10: f10 };
 const { runs, tasks } = data();
 console.log(`<!-- ${runs.length} agent runs, ${tasks.length} tasks, ${dayOf(Math.min(...runs.map((r) => r.ts)))} to ${dayOf(Math.max(...runs.map((r) => r.ts)))} -->`);
 for (const n of Object.keys(F)) if (arg === 'all' || arg === n) console.log(`\n### Finding ${n}\n\n${F[n]()}`);

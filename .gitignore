@@ -19,3 +19,6 @@ node_modules/
 Thumbs.db
 .vscode/
 .idea/
+
+# External review notes (owner only)
+REVIEW_*.md

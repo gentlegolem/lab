@@ -64,11 +64,14 @@ The lines starting "Pre-registered test", "Primary" and "Secondary" are the resu
 
 ## Deviations
 
-1. **2026-11-07, re-frozen once, before any run on new data.** About an hour after the first freeze, a check run of the
+1. **2026-11-07, re-frozen before any run on new data.** About an hour after the first freeze, a check run of the
    frozen code crashed: the two transcript readers (`scanFile` and `lib/usage.js`) loaded each file whole, and a
-   subagent transcript written that day had passed Node's 512 MB string limit. Both now read line by line. On every
-   transcript file the old readers can open, the new ones return identical results. The test itself (sets, statistic, minimums, decision rule) did
-   not change. The tag `f10-prereg` was moved to the commit with the fix; the first frozen commit stays in the history.
+   subagent transcript written that day had passed Node's 512 MB string limit. Both now read line by line (fixed in
+   two commits that evening). On every transcript file the old readers can open, the new ones return identical
+   results. Re-run from the tag, 11 of the 12 committed tables come out unchanged, finding 10's among them; finding 8
+   counts 15 session logs in the folder instead of 16, with the same search result. The test itself (sets, statistic, minimums,
+   decision rule) did not change. The tag `f10-prereg` now points to the fixed code; the earlier commits stay in the
+   history.
 
 ## Result
 

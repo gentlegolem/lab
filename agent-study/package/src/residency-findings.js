@@ -88,14 +88,21 @@ function listFiles() {
 	return out;
 }
 const LIMIT_RE = /usage limit|hit your limit|limit (reached|will reset)|you've reached your/i;
+const GATE_RE = /"name":"(Bash|PowerShell)","input":\{"command":"[^"]*(check\.js|land\.js|heavy\.ps1|\.test\.|run-tests|--test|soak|smoke)/g;
 function scanFile(file) {
-	const txt = fs.readFileSync(file, 'utf8');
-	const lines = txt.split('\n').filter(Boolean);
-	const engine = C.engineCallRe ? (txt.match(C.engineCallRe) || []).length : 0;
+	// line by line: a subagent transcript can pass Node's 512 MB string limit
+	let engine = 0; let gateRuns = 0; const ts = []; const lines = []; // lines: the last 40 only
+	eachLine(file, (l) => {
+		if (!l) return;
+		if (C.engineCallRe) engine += (l.match(C.engineCallRe) || []).length;
+		gateRuns += (l.match(GATE_RE) || []).length;
+		const m = l.match(TS_RE); if (m) { const t = Date.parse(m[1]); if (t) ts.push(t); }
+		lines.push(l); if (lines.length > 40) lines.shift();
+	});
 	const tail = lines.slice(-3).join('\n');
 	// final report = the last assistant text (or the SubagentHandback message); gate runs = Bash calls of check.js / land.js / tests (finding 9)
 	let finalText = '';
-	for (let i = lines.length - 1; i >= Math.max(0, lines.length - 40) && !finalText; i--) {
+	for (let i = lines.length - 1; i >= 0 && !finalText; i--) {
 		if (!lines[i].includes('"type":"assistant"')) continue;
 		try {
 			for (const b of ((JSON.parse(lines[i]).message || {}).content || [])) {
@@ -104,9 +111,7 @@ function scanFile(file) {
 			}
 		} catch (e) { /* not a message line */ }
 	}
-	const gateRuns = (txt.match(/"name":"(Bash|PowerShell)","input":\{"command":"[^"]*(check\.js|land\.js|heavy\.ps1|\.test\.|run-tests|--test|soak|smoke)/g) || []).length;
 	// idle pauses: the longest gap between two messages, and the span with every gap capped at 10 minutes
-	const ts = []; for (const l of lines) { const m = l.match(TS_RE); if (m) { const t = Date.parse(m[1]); if (t) ts.push(t); } }
 	ts.sort((a, b) => a - b);
 	let maxGap = 0; let active = 0;
 	for (let i = 1; i < ts.length; i++) { const g = ts[i] - ts[i - 1]; maxGap = Math.max(maxGap, g); active += Math.min(g, 10 * 60000); }
@@ -485,13 +490,15 @@ function f10() {
 function eachLine(file, cb) {
 	const fd = fs.openSync(file, 'r');
 	const buf = Buffer.alloc(32 << 20);
+	const dec = new (require('string_decoder').StringDecoder)('utf8'); // keeps a character split across two chunks whole
 	let rest = '';
 	let n;
 	while ((n = fs.readSync(fd, buf, 0, buf.length, null)) > 0) {
-		const parts = (rest + buf.toString('utf8', 0, n)).split('\n');
+		const parts = (rest + dec.write(buf.subarray(0, n))).split('\n');
 		rest = parts.pop();
 		for (const p of parts) cb(p);
 	}
+	rest += dec.end();
 	if (rest) cb(rest);
 	fs.closeSync(fd);
 }

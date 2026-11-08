@@ -45,8 +45,9 @@ doesn't test their own judgment.
 Hooks refused 70 in-place `sed -i` edits on synced source folders and 27 long reads or dumps; the gate refused 56 of
 497 landing attempts for a failed check. Blind labels of what agents did next (κ 0.85): 36 of the 70 `sed -i`
 refusals hit calls the hook isn't meant to stop. Of the 61 real refusals, agents did what the refusal asked in 51 and
-routed around it in 2; none retried. After a long-read refusal, most re-read nearly the same range with the tool the
-refusal names: the rule held in form more than in effect ([finding 13](findings/finding-13.md)).
+routed around it in 2; none retried. After 12 long line-range refusals, 8 agents re-read with the tool the refusal
+names, and 5 of them asked for at least 97% of the refused range: the rule held in form more than in effect
+([finding 13](findings/finding-13.md)).
 
 ## 3. A planner's forecast against what it delivered
 An architect pass split a feature into 15 tasks of about 150k tokens. The cost of the unsplit work (9.3M

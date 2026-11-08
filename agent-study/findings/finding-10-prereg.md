@@ -64,7 +64,11 @@ The lines starting "Pre-registered test", "Primary" and "Secondary" are the resu
 
 ## Deviations
 
-None so far.
+1. **2026-11-07, re-frozen once, before any run on new data.** About an hour after the first freeze, a check run of the
+   frozen code crashed: the transcript reader loaded each file whole, and a subagent transcript written that day had
+   passed Node's 512 MB string limit. The reader now goes line by line. On all 1,223 transcript files the old reader
+   can open, the new one returns identical results. The test itself (sets, statistic, minimums, decision rule) did
+   not change. The tag `f10-prereg` was moved to the commit with the fix; the first frozen commit stays in the history.
 
 ## Result
 

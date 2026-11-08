@@ -58,7 +58,8 @@ Agreement: Cohen's kappa 0.85 (90 of 98 cases agree). Counts are cases both labe
   cap). None retried the same call. 8 are split between labellers.
 - **Complied by the letter:** 8 of the 12 long line-range refusals were followed by a Read with offset and limit,
   the tool the refusal names. 2 of those 8 read at most half the refused range; 5 asked for at least 97% of it. The rule
-  held in form, and the long read it was meant to stop mostly happened anyway (counted by the script).
+  held in form, but in 6 of the 12 the Read still asked for more than half of the long range it was meant to stop
+  (counted by the script).
 
 **Confidence: medium.** Agreement is good after the codebook revision, but this is one studio's tooling rules, a
 3-call window, and 61 real refusals from few sessions.

@@ -44,10 +44,11 @@ doesn't test their own judgment.
 ## 2. Guardrails
 The `sed -i` hook on synced source folders fired 70 times (34 real, 36 false alarms); other hooks refused 27 long
 reads or dumps and 1 brief without an estimate line, and the gate refused 56 of 497 landing attempts for a failed
-check. Blind labels of the refusals and what agents did next (κ 0.85): the false alarms are calls the hook isn't meant
-to stop; of the 61 real hook refusals, agents did what the refusal asked in 51 and routed around it in 2; none
-retried. After 12 long line-range refusals, 8 agents re-read with the tool the refusal names, and 5 of them asked for
-at least 97% of the refused range: the rule held in form more than in effect ([finding 13](findings/finding-13.md)).
+check. Blind labels of the refusals and what agents did next (κ 0.85): the false alarms (36 `sed -i`, 1 long read) are
+calls a hook isn't meant to stop; of the 61 real hook refusals, agents did what the refusal asked in 51 and routed
+around it in 2; none retried. After 12 long line-range refusals, 8 agents re-read with the tool the refusal names,
+and 5 of them asked for at least 97% of the refused range: the rule held in form more than in effect
+([finding 13](findings/finding-13.md)).
 
 ## 3. A planner's forecast against what it delivered
 An architect pass split a feature into 15 tasks of about 150k tokens. The cost of the unsplit work (9.3M

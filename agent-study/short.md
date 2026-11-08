@@ -102,6 +102,14 @@ The architect's memory cost, an "aim close to 150k" instruction and edits outsid
 them. Tagging each brief with its budget rule and source plan, and writing down the expected saving before each
 planning pass, would.
 
+## Related work
+These questions have been studied with more control: developers' AI forecasts in a randomised trial (24% less time
+expected, 19% more measured; [Becker et al., 2025](https://arxiv.org/abs/2507.09089)), agents cheating on tests that
+conflict with the spec ([Zhong et al., 2025](https://arxiv.org/abs/2510.20270)), judge bias and judge panels
+([Zheng et al., 2023](https://arxiv.org/abs/2306.05685); [Verga et al., 2024](https://arxiv.org/abs/2404.18796)) and
+multi-agent failure modes ([Cemri et al., 2025](https://arxiv.org/abs/2503.13657)). This note adds one working setup's
+own records, not a new method ([more](README.md#related-work)).
+
 <!-- OWNER'S VOICE: your research interest, carried over unchanged. Rewrite in your own words. -->
 The agents' own forecasts were the least checked numbers in the system. That is the question I'd like to study: how
 well agents' claims ("this will save X", "done") match what is measured.

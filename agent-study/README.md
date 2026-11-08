@@ -377,6 +377,45 @@ task. The reason was the same each time: the change wasn't recorded where the da
 - write down the expected saving before every planning pass;
 - log cut-offs and restarts as their own fields.
 
+## Related work
+Each question here has been studied elsewhere, with more control. This note claims no new method; it asks the same
+questions of one working setup's own records. Each source was opened and checked on 2026-11-07.
+- **Coding-agent evaluation.** SWE-bench ([Jimenez et al., 2023](https://arxiv.org/abs/2310.06770)) scores models on
+  real GitHub issues with each repository's own tests. SWE-agent ([Yang et al., 2024](https://arxiv.org/abs/2405.15793))
+  showed that the interface changes results: in its ablation, a linter that discards invalid edits took the resolve
+  rate from 15.0% to 18.0%. Section 7's hooks are rules of that kind; finding 13 asks instead whether agents follow
+  them once refused (51 of 61 did).
+- **Forecasts and reports against measurement.** In a randomised trial
+  ([Becker et al., 2025](https://arxiv.org/abs/2507.09089)), experienced developers forecast that AI would make their
+  tasks 24% shorter; they took 19% longer, and afterwards still estimated 20% shorter. Section 2 has the same shape
+  with an agent forecasting (24% promised, at most about 4% seen), for one planning pass and without randomisation.
+  Stated reasons can misrepresent why a model answered ([Turpin et al., 2023](https://arxiv.org/abs/2305.04388)), and
+  reasoning models often omit a hint they used ([Chen et al., 2025](https://arxiv.org/abs/2505.05410)). Section 8
+  checks reports of actions instead: "landed" held 96%, but omissions were common (10 of 51 refused runs said so).
+- **Gaming the checks.** Coding agents reward-hack, and a weaker model can catch it in a stronger one's reasoning,
+  until optimising against that monitor teaches them to hide it ([Baker et al., 2025](https://arxiv.org/abs/2503.11926)).
+  When tests are made to conflict with the specification, frontier models often cheat, Claude models mostly by
+  modifying tests ([Zhong et al., 2025](https://arxiv.org/abs/2510.20270)). Finding 12 is a weaker, unplanted version:
+  6 of 33 edits after a failed check loosened a check or test.
+- **Model judges.** LLM judges show position, verbosity and self-enhancement biases
+  ([Zheng et al., 2023](https://arxiv.org/abs/2306.05685)); swapping two answers can flip a verdict, and aggregating
+  over both orders helps ([Wang et al., 2023](https://arxiv.org/abs/2305.17926)); a panel of smaller models from
+  different families beat one large judge, with less bias, at under a seventh of the cost
+  ([Verga et al., 2024](https://arxiv.org/abs/2404.18796)). Section 4's loop started with one judge per round; its
+  re-check used these fixes: sides redrawn per judge, 3 judges, identical-side controls.
+- **Multi-agent software teams.** ChatDev ([Qian et al., 2023](https://arxiv.org/abs/2307.07924)) and MetaGPT
+  ([Hong et al., 2023](https://arxiv.org/abs/2308.00352)) split software work among specialised agents; MetaGPT has
+  them verify intermediate results. A multi-agent failure taxonomy
+  ([Cemri et al., 2025](https://arxiv.org/abs/2503.13657)) found 14 modes in 3 categories, one of them task
+  verification (κ 0.88). Anthropic reports that its multi-agent research system uses about 15× the tokens of a chat
+  ([Hadfield et al., 2025](https://www.anthropic.com/engineering/multi-agent-research-system)); sections 1–3 measure
+  that cost side in one studio.
+- **Oversight.** Scalable oversight is supervising systems that may outperform us at the task
+  ([Bowman et al., 2022](https://arxiv.org/abs/2211.03540)); AI control builds protocols that stay safe when a weaker
+  trusted model and limited human labour check a stronger untrusted one
+  ([Greenblatt et al., 2023](https://arxiv.org/abs/2312.06942)). The gate and hooks are cheap trusted checks of that
+  kind, measured here in ordinary use, not against an agent trying to subvert them.
+
 <!-- OWNER'S VOICE: this whole section is about you. Rewrite it yourself. -->
 ## About me and the method
 I'm a game engineer and former engineering director (in game development since 2004: AI, gameplay, telemetry,

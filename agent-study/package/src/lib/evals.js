@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // Attribution of commits to agent tasks and the rework / revert / landing-gate signals (adapted from the studio's own scorer).
 // Signals: checks (no check-failed before the first landed entry), land (no conflict / push failure before it), rework (lines of later fix-like
 // commits <= N days on files the task touched, relative to the task's own lines), revert (a later commit reverts one of the task's commits).

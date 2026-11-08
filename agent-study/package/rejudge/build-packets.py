@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Builds blinded A/B packets (side assignment by a seeded coin, a same-size mask over page chrome) for a fresh-judge re-run of UI rounds.
 Reads the raw round shots + score JSONs, writes <out>/packets/<id>/ and <out>/keys/<id>.json (the key stays with the owner, never with the judge)."""
 import json, random, os, shutil
@@ -6,6 +7,8 @@ import sys
 # usage: python build-packets.py <rounds-dir> <out-dir> <rounds.json>
 # <rounds-dir>/<src>/{today,proposed}_{pc,ipad,phone}.png and {today,proposed}.json (score files); rounds.json:
 # {"r1": {"src": "1", "seed": 1, "job": "what the screen is for", "task": "what a player does here"}, ...}
+if len(sys.argv) != 4:
+    sys.exit('usage: python build-packets.py <rounds-dir> <out-dir> <rounds.json>')
 SRC, OUT, CFG = sys.argv[1], sys.argv[2], sys.argv[3]
 DEV = ('pc', 'ipad', 'phone')
 MASK_W = 0.56   # fraction of the width, same box on both sides (hides page chrome)

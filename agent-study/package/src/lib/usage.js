@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // Parsing of Claude Code subagent transcripts: <root>/<session>/subagents/agent-*.jsonl (+ .meta.json: description, agentType, and `model`
 // when the agent was launched with an explicit model) and subagents/workflows/<run>/ (workflow agents).
 // Each assistant message carries `usage`; a message is logged once per content block with the same id and its usage

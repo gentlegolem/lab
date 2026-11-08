@@ -26,7 +26,7 @@ well agents' claims ("this will save X", "done") match what is measured.
 - **The studio:** a coordinator agent splits the work, an architect agent plans large features, and specialist agents
   build in separate git worktrees. Every change goes through a landing gate that runs automated checks before merging.
   I make the decisions and review.
-- **The data:** 1,062 subagent runs (1,054 tasks), 2026-10-10 to 2026-11-03; one studio, one operator, one PC. It comes
+- **The data:** 1,062 subagent runs (1,054 tasks; 1 run is a hand-entered ledger row with no transcript, so 1,061 transcript runs), 2026-10-10 to 2026-11-03; one studio, one operator, one PC. It comes
   from local Claude Code transcripts (tokens, time, tool calls, model, the brief with its estimate line), a cost ledger,
   git history (which dates each change) and the landing gate's log. A read-only script reproduces sections 1–3 and 6–8.
 - **Counts that look inconsistent but aren't:**
@@ -96,7 +96,7 @@ ran, so the same work can be compared with itself:
 | Architect's own cost | 150–250k reported (est.) | 180k reported = 0.56M plan-equivalent: **accurate** |
 | Cost of the split tasks | 7.7M, forecast by the plan | 8.89M measured for 14 of 15 tasks: **at least 15% over** |
 | Saving on 9.3M of unsplit work (itself a forecast) | promised 2.2M (24%) before the run; 1.6M (17%) once the plan was written, by the same planning session | **at most about 0.41M (4%)** against that forecast; with the 15th task at the other tasks' typical cost, between about −0.2M and +0.1M |
-| Net, after the architect's 0.56M | positive | **can't tell:** at best −0.16M against the forecast (−0.45M to −0.74M with the 15th task), but the pass breaks even if the unsplit work would really have cost 5–8% more than forecast |
+| Net, after the architect's 0.56M | positive | **can't tell:** at best −0.16M against the forecast (−0.45M to −0.74M with the 15th task), but the pass breaks even if the unsplit work would really have cost about 2% more than forecast (5–8% with the 15th task) |
 
 The plan priced its own cost well. Its benefit can't be confirmed: the "before" side (9.3M) is itself an agent
 forecast, and an error of 5–8% in it is enough to flip the result. No forecast here has been shown to be that precise
@@ -126,7 +126,7 @@ order favour skipping it.
 - Confidence: medium that the split tasks overran the plan; low on whether the pass paid for itself; low for pass 1.
 
 ## 3. Choosing a model per task: cheaper on half the task classes, not overall
-On Oct 26 the default moved from Opus (94% of the 715 tasks before) to Sonnet, with Opus by explicit override for
+On Oct 26 the default moved from Opus (95% of the 715 tasks before) to Sonnet, with Opus by explicit override for
 design-heavy work (41% of the 316 tasks after).
 
 | Task class | n before / after | Median tokens before → after | Agent-minutes before → after |
@@ -279,7 +279,7 @@ factor was applied.
 **The fix (Nov 3; package: finding 10).** The minutes factor is now applied by the ledger when it records a run, not
 by the agent writing the brief. The quote as written is kept next to the corrected figure, so writers keep giving
 their honest judgment and nothing is corrected twice. The tokens factor is not applied, since it didn't reduce the
-error. Baseline before the change (frozen Nov 3 at 8 pm Montreal time, 2026-11-04 01:00 UTC; tasks with a required
+error. Baseline before the change (frozen 2026-11-04 01:00 UTC; tasks with a required
 estimate line, n = 181): minutes bias 0.37, median error 63% as written; applying ×0.34 to those tasks gives 45%. (All
 tasks before the change: n = 313, bias 0.38, error 63%; 46% with ×0.34.) The test is whether the quotes as written
 change.
@@ -291,7 +291,7 @@ change.
 | Before the fix | 181 | 0.37 | 63% | 45% (applied afterwards, for comparison) |
 | After the fix | 26 | 0.27 | 74% | 38% (applied by the ledger) |
 
-- The ledger applies the factor as designed (recorded ÷ written = 0.34 on every task).
+- The ledger applies the factor as designed (median recorded ÷ written = 0.34, n = 26).
 - Like for like (×0.34 on both sides), the error is 45% before and 38% after; the difference is within the noise at
   this n. The gain is the correction now being applied at all, not better estimates.
 - The 26 tasks come from 2 coordinator sessions over about 1.5 days, so the effective sample is much smaller than 26.

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // Small helpers for the ledger CSV and the "ESTIMATE:" line of an agent brief.
 'use strict';
 // project = a commit tag ([Tag] subject prefix): the agent type when it is a tag, else a tag named in the description

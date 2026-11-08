@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // Studio-specific settings. The defaults are generic; a studio puts its own values in a JSON file and sets
 // RESIDENCY_CONFIG to its path (see config.example.json). Regex settings are strings; '' turns the feature off.
 'use strict';

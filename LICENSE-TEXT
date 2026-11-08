@@ -1,0 +1,18 @@
+Gentle Golem Lab: licence for the text, tables and figures
+
+Copyright (c) 2026 Gentle Golem
+
+The text, tables and figures in this repository are licensed under the Creative
+Commons Attribution 4.0 International licence (CC BY 4.0). That covers the
+Markdown files (READMEs and write-ups), the result tables in
+agent-study/package/tables/, and any images.
+
+You may share and adapt them for any purpose, including commercially, as long
+as you give credit, link to the licence, and say if you changed them.
+
+Suggested credit: "Gentle Golem Lab, https://github.com/gentlegolem/lab, CC BY 4.0"
+
+Full licence: https://creativecommons.org/licenses/by/4.0/legalcode
+
+The code is under the MIT licence in LICENSE: every .js, .py and .json file,
+and the prompt template agent-study/package/rejudge/judge-prompt.template.md.

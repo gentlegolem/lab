@@ -29,4 +29,4 @@ Measuring = data being collected · Reading = background research · Idea = not 
 
 ## License
 
-Text: CC BY 4.0. Scripts: MIT. See [LICENSE](LICENSE).
+Text, tables and figures: CC BY 4.0, see [LICENSE-TEXT](LICENSE-TEXT). Code: MIT, see [LICENSE](LICENSE).

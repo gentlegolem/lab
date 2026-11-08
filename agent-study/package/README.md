@@ -64,10 +64,17 @@ Elsewhere, use `export` instead of `set`. `node run-all.js` writes `tables/findi
 streams every transcript once per finding: about 1.5 minutes per finding here, so about 12 minutes in all. `node src/residency-findings.js 9` prints one
 finding to stdout.
 
+No data ships with the package: it runs on your own transcripts and ledger, in the formats above. Without
+`RESIDENCY_LEDGER` it stops and says so. To rebuild the shipped tables from the studio's data, run `node run-all.js`
+with `RESIDENCY_UNTIL=2026-11-03T19:00:00Z`, then finding 10 again at its own cut:
+`RESIDENCY_UNTIL=2026-11-06T00:26:16Z node src/residency-findings.js 10 > tables/finding-10.md`.
+
 `RESIDENCY_UNTIL` sets one end date for every input: runs that started before it, and commits, landing-log lines and
 hook refusals before it. Set it to a write-up's end date to reproduce its tables. The ledger itself isn't cut
 by date, because it can be rewritten later (a backfill, say): each table's first line gives the ledger's SHA-256, so a
-re-run can tell whether it read the same version. `RESIDENCY_FIX_AT` (optional,
+re-run can tell whether it read the same version. A re-run on Nov 7 from a clean clone read a newer ledger (it changed
+three times during the run) and reproduced every number in the tables, except one count that isn't cut by date:
+finding 8's "searched N coordinator-session logs" counts the logs present at run time (16 then, 15 now; still 0 hits). `RESIDENCY_FIX_AT` (optional,
 default 2026-11-04T01:00:00Z) is when the minutes fix of finding 10 took effect.
 
 It needs Node 18 or newer (tested on 24) and git on the PATH. There's no npm install and there are no dependencies.

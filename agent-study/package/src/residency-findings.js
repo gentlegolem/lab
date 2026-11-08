@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: MIT
 // Read-only analysis of how Claude models behaved in an agent pipeline (see ../README.md).
 // Usage:  node src/residency-findings.js [finding|all]      finding = 1 | 2 | 3 | 6 | 7 | 8 | 9 | 10 (default all). Prints markdown tables to stdout; writes nothing.
 // Inputs (arguments are environment variables, nothing is hard-coded):

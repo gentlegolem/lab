@@ -19,7 +19,11 @@ since its after-fix period starts on Nov 4. Re-running the scripts overwrites th
 | 7 | 7 | Guardrail (hook) refusals in the transcripts; landing-gate outcomes | transcripts, landing log |
 | 2 | 8 | Architect break-even: what a planning pass cost against its plan's forecasts, and how far the forecast can be off before the result flips | transcripts, git history |
 | 8 | 9 | Did "done", "landed", "checks pass" and "verified" claims hold up? | transcripts, landing log, git history |
-| 6 (the fix) | 10 | The minutes fix (the ledger applies the published factor itself): estimate error before and after | transcripts, ledger |
+| 6 (the fix) | 10 | The minutes fix (the ledger applies the published factor itself): estimate error before and after, and the [pre-registered test](../findings/finding-10-prereg.md) | transcripts, ledger |
+| 8 (check) | 9v | Do finding 9's claim patterns find real claims? Sentences from five pools, for blind labels | transcripts, landing log |
+| 8 | 11 | When the gate refused a run before it landed, did the report say so? | transcripts, landing log |
+| 7 | 12 | After a failed check, did the agent fix the code or loosen the check? | transcripts, landing log |
+| 7 | 13 | After a hook refused a call, did the agent comply, retry or route around it? | transcripts |
 
 Findings 4 (a fresh judge on UI rounds) and 5 (game engine vs web mockups) read the studio's own UI round logs, so
 they aren't in this package. `rejudge/` holds the method of the blinded re-judge used for finding 4, without data.
@@ -61,7 +65,7 @@ set RESIDENCY_UNTIL=<end date, optional, e.g. 2026-11-10T00:00:00Z>
 node run-all.js
 ```
 Elsewhere, use `export` instead of `set`. `node run-all.js` writes `tables/finding-N.md` and overwrites them. It
-streams every transcript once per finding: about 1.5 minutes per finding here, so about 12 minutes in all. `node src/residency-findings.js 9` prints one
+streams every transcript once per finding: about 1.5 minutes per finding here, so about 18 minutes in all. `node src/residency-findings.js 9` prints one
 finding to stdout.
 
 No data ships with the package: it runs on your own transcripts and ledger, in the formats above. Without
@@ -78,6 +82,17 @@ finding 8's "searched N coordinator-session logs" counts the logs present at run
 quotes derived from tokens, all tasks before the fix, where the after-fix tasks come from, quotes by model), so their
 first line shows a newer ledger version; every row they had before is unchanged. `RESIDENCY_FIX_AT` (optional,
 default 2026-11-04T01:00:00Z) is when the minutes fix of finding 10 took effect.
+
+**Intervals.** Headline comparisons in findings 1, 2, 9, 10 and 11–13 print a 95% interval from a session-clustered
+bootstrap: whole coordinator sessions are drawn with replacement 2,000 times (fixed seed), since tasks in one session
+share a backlog and a day. With one session there is no interval; with under 5 it is marked rough.
+
+**Model labels (findings 9v, 11–13).** With `RESIDENCY_EXPORT=<folder>`, these findings write their cases for
+labelling to `<folder>/finding-N/cases.jsonl`, and the key (each case's group) to `<folder>/finding-N-key.json`, which
+a labeller must not see. The cases hold transcript text, so keep that folder private. With `RESIDENCY_LABELS=<folder>`
+holding `finding-N-A.json` and `finding-N-B.json` (`{case id: tag}`, and an optional third labeller's `-C.json`), the
+tables add Cohen's kappa, the counts both labellers agree on, an interval and a held-out check. The codebooks are in
+[`../findings/`](../findings/).
 
 It needs Node 18 or newer (tested on 24) and git on the PATH. There's no npm install and there are no dependencies.
 `RESIDENCY_REPO` must be a real checkout. It's a heavy job: run it alone, at low priority.

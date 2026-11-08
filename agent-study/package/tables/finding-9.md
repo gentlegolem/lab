@@ -1,4 +1,4 @@
-<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
+<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 c1f5b5b64977, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
 
 ### Finding 9
 
@@ -24,6 +24,7 @@ Runs with a final report: 1010 of 1061 transcript runs (2026-10-10 to 2026-11-03
 
 Reports that say they did not verify in the engine (hedged): 323 of 1010; reports claiming engine verification with no engine tool call in the run: 5 of 106.
 Reports that claim landing but whose branch has no landed entry (checkable runs only): 12. Reports that never mention landing although the branch landed: 8 of 327 landed.
+Session-clustered 95% interval (whole sessions drawn 2000 times) for "landed" claims that held: 96% (95% CI 92% to 99%; 331 items, 9 sessions). "Checks pass" claims held 193 of 193; with no miss seen, the rule of three puts the miss rate under 1.6% (95%, if the claims were independent). The check is weak by design: a landed entry means the gate's checks passed, so this tests whether agents report the gate's result, not whether the checks were right.
 Of 319 reports that claim landing and did land, 270 (85%) landed without a check-failed or conflict entry first (the claim was true, but the gate refused 49 of them at least once before they landed).
 
 **C. Did the work stay done? (3 days after the task's last commit, on the files the task touched)**

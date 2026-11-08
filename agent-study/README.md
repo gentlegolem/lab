@@ -5,6 +5,7 @@
 *Jonathan Gauvin, November 2026. Medians unless stated; each result has its sample size (n) and limits next to it.*
 
 ## The short version
+<!-- OWNER'S VOICE: personal framing. Rewrite in your own words before publishing. -->
 I run a small game studio where most of the code is written by Claude agents. When I checked my own setup changes
 against the data:
 - **Tasks planned to a token budget were small, but so were unbudgeted tasks on the same nights:** size followed the
@@ -19,9 +20,11 @@ against the data:
 - **A first check of agents' own claims** (section 8): "landed" matched the landing log 96% of the time. Every "checks
   pass" claim that went through the landing gate held; most never reached the gate, so they can't be checked this way.
 
+<!-- OWNER'S VOICE: your research interest. Rewrite in your own words. -->
 The agents' own forecasts were the least checked numbers in the system. That is the question I'd like to study: how
 well agents' claims ("this will save X", "done") match what is measured.
 
+<!-- OWNER'S VOICE: both reviewers ask for one line on who did what: what you designed and decided, what the agents ran and drafted. Write it yourself; Anthropic's candidate guidance asks for your own first draft. -->
 ## Setup
 - **The studio:** a coordinator agent splits the work, an architect agent plans large features, and specialist agents
   build in separate git worktrees. Every change goes through a landing gate that runs automated checks before merging.
@@ -47,7 +50,7 @@ well agents' claims ("this will save X", "done") match what is measured.
     ("R4"), so a plain word like "UI" reused for two jobs doesn't join them. A resume after a usage limit under a new
     id can't be seen, so restart counts are a floor.
   - **Fix-like commit:** a later commit on the same files whose message says fix, bug, verify or note, within 3 days.
-    **Rework score:** 100 = no fix-like commit seen. After the landing gate arrived, most tasks score 97–100, so the
+    **Rework score:** 100 = no fix-like commit seen. After the landing gate arrived, the median task scores 98 (class medians 96–99), so the
     score is "near its ceiling" and can't separate models or setups.
   - **Bias** = actual ÷ estimate. A minutes bias of 0.37 means the estimate was about 2.7× too high.
 - **The main limit:** this is observational data from one setup. Era, task mix and model choice changed together, and
@@ -79,7 +82,9 @@ budget statement itself. Pass 2 is the one budgeted set with no same-night contr
 
 **Limits:**
 - The budgeted tasks were also the architect-planned ones, so "the budget" and "the planning" can't be separated.
-- The same-night control argues against the budget line having an effect of its own.
+- The same-night control argues against the budget line having an effect of its own, but it is one session, so no
+  interval. Between the passes, the 14 budgeted briefs ran 164k smaller than the 479 others (95% interval 43k to
+  237k smaller, 8 sessions): at n = 14, the one comparison where the budget line goes with smaller tasks.
 - Restart counts are a floor (see Definitions).
 - Rework says nothing here, because pass 1 ran before the landing gate existed.
 - Confidence: high that these tasks were small; low that the budget made them so.
@@ -158,6 +163,8 @@ overrides went to the biggest, design-heavy builds, and those cost about 3.5× a
 - Opus got the harder tasks by design, so Sonnet against Opus isn't like for like, and the "before" era is earlier work
   on different features.
 - Four classes got cheaper; three of the other four have small n after the change.
+- Drawing whole sessions instead of tasks (2,000 draws), the 3.5× has a 95% interval of 0.84× to 4.78× (7 sessions):
+  it includes 1, so it depends on which sessions ran. Era B minus era A, all tasks: +9k (−236k to +121k, 14 sessions).
 - Confidence: medium that Sonnet tasks cost less; low on why the overall cost didn't fall.
 
 ## 4. A UI loop with a blind judge, a per-device check, and a human who can overrule both
@@ -216,6 +223,9 @@ Two other overrides:
   overstated how big the wins were: a hypothesis at n = 4, not a result. The re-judge reused the archived
   screenshots, its prompt gave less context than the originals, and the first round's leak was assumed, not proven.
 - Clean blinding is confirmed for 4 of the 19 rounds, the re-judged ones. The other 15 weren't audited for a leak.
+- Three more fresh judges per re-judged round (sides redrawn per judge; 2 controls with identical sides both said
+  "same") agreed with the clean judge in 3 of 4 rounds; in the 4th, one judge ruled the change out of scope. None
+  picked the other side, and round 3's device split came back 4 of 4 ([judge check](findings/finding-4-judges.md)).
 - The judge and the builders are the same model family (Claude), so a shared taste can't be ruled out. No judge from
   another family was tried.
 - The phone fix after the override was scored by the tool, not re-judged, and my reason was written down afterwards.
@@ -298,7 +308,8 @@ change.
   The same change added a reminder to brief writers not to pre-apply the factor, which also bears on the quotes.
 - The median quote rose from 40 to 55 minutes, but that is mix: Opus tasks were quoted much higher after the fix
   (median 45 → 120) and also ran longer, while Sonnet quotes barely moved (35 → 37.5).
-- Preliminary; the final test (per model, by session, at a stated cut date) comes with the next data cut.
+- Preliminary. The final test is [pre-registered](findings/finding-10-prereg.md): new tasks only, a fixed cut
+  (Nov 10), sessions drawn for the interval, a fixed decision rule and a minimum of 30 tasks from 3 sessions.
 
 
 ## 7. What the guardrails caught
@@ -309,18 +320,22 @@ change.
 | Landing gate: refused because a check failed (of 497 attempts) | 56 (11%) |
 
 The other gate attempts: 410 landed, 27 hit a merge conflict, 3 had nothing to land, 1 was a dry run. There is no hook for "done with
-failing tests". The 56 gate refusals are the nearest measure: work an agent tried to land that didn't pass. Edits
+failing tests". The 56 gate refusals are the nearest measure: work an agent tried to land that didn't pass. Blind labels of what
+agents did after a hook refusal ([finding 13](findings/finding-13.md)): 36 of the 70 `sed -i` refusals hit calls the
+hook isn't meant to stop; of the 61 real ones across hooks, 51 complied and 2 routed around. After a
+failed check, blind labels of the 33 with edits: 14 fixed the code, 6 loosened a check or test, mostly by casting to
+the type checker's catch-all type (low confidence, [finding 12](findings/finding-12.md)). Edits
 outside an agent's task are prevented, but nothing logs them, so they are **not measured**.
 
 ## 8. A first measurement: how often "done" held up (package: finding 9)
-This is a first, small measurement of the study I propose below, not the study. I read the final report of 1,010
+This is a first, small measurement of the study I propose below, not the study. A script read the final report of 1,010
 agent runs (of 1,061 transcript runs, Oct 10 to Nov 3 19:00 UTC) and checked each claim against the record: the landing log,
-the run's own tool calls, and git history. Claims were found by sentence patterns, not hand-labelled, so their
-precision isn't measured.
+the run's own tool calls, and git history. Claims were found by sentence patterns, checked afterwards with blind labels
+(see Limits).
 
 | Claim in the report | Checked against | Checkable | Matched |
 |---|---|---|---|
-| Landed | a "landed" entry in the landing log | 331 | 319 (96%) |
+| Landed | a "landed" entry in the landing log | 331 | 319 (96%; 95% interval 92–99%, sessions drawn) |
 | Checks pass | the gate's verdict, for runs that went through the gate | 193 of 502 claims | 193 (100%) |
 | Tests / soak pass | a test command appears in the run | 177 | call made in 161 |
 | Verified in the engine | an engine tool call appears in the run | 106 | call made in 101 |
@@ -328,7 +343,8 @@ precision isn't measured.
 The last two rows only show that a call was made, not that it passed: the record has no test or playtest output.
 
 - **"Landed" was nearly always true, but often not on the first try:** 270 of 319 (85%) landed with no refused or
-  conflicting attempt first. The gate turned 49 back at least once before they landed, and the reports rarely say so.
+  conflicting attempt first. The gate turned 49 back at least once before they landed. Blind labels: 10 of 51 such reports say so (20%; 7% to 41%), 0 of 51 first-try reports
+  ([finding 11](findings/finding-11.md)).
 - **"Checks pass" held every time it could be checked:** all 193 claims from runs that went through the gate matched
   its verdict. The other 309 claims come from runs that never went through the gate, or ran before its log started
   (Oct 24), so this record can't check them.
@@ -344,8 +360,10 @@ The last two rows only show that a call was made, not that it passed: the record
   said they hadn't checked), but n is 39 and 133 and the tasks differ.
 
 **Limits:**
-- Patterns, not hand labels; precision not measured. The patterns were corrected after a review found sentences like
-  "0 failed" counted as hedges and "nothing landed yet" counted as a landed claim.
+- Patterns, checked afterwards by two blind labellers ([check](findings/finding-9-claims.md), kappa 0.94): a match is
+  the claim 73–98% of the time by kind, and only 12 of the 33 contradicted reports made the claim (5 "landed", 7
+  "tests", 0 "engine"). The patterns miss some claims ("committed and pushed"), so claim counts are floors. They were
+  corrected earlier after a review found "0 failed" counted as a hedge and "nothing landed yet" as a landed claim.
 - The agent sees the gate's own output before it writes "landed", so the 96% tests faithful reporting more than
   judgment.
 - "Done" has no direct ground truth; the rework signal is the nearest.
@@ -359,6 +377,7 @@ task. The reason was the same each time: the change wasn't recorded where the da
 - write down the expected saving before every planning pass;
 - log cut-offs and restarts as their own fields.
 
+<!-- OWNER'S VOICE: this whole section is about you. Rewrite it yourself. -->
 ## About me and the method
 I'm a game engineer and former engineering director (in game development since 2004: AI, gameplay, telemetry,
 technical leadership). The studio runs its product work as closed loops, and this note is one of them:
@@ -368,6 +387,7 @@ technical leadership). The studio runs its product work as closed loops, and thi
   judge model, then a human decision that can override it.
 - **Next:** tagging competitors' player feedback by feature, before and after their fixes.
 
+<!-- OWNER'S VOICE: your proposal and motivation ("Why this matters to me" above all). Rewrite it yourself. -->
 ## What I'd study next
 Across these findings, the least-checked signal is the agent's own claim, whether a forecast ("−24%", where at most
 −4% showed), a report ("done"), or an instruction it was given ("apply the correction"). This sits between scalable oversight (can a cheaper checker
@@ -393,7 +413,7 @@ one operator.
 ## Data and code
 A read-only analysis package re-runs sections 1, 2, 3, 6, 7 and 8 from a studio's own Claude Code transcripts, cost
 ledger, git history and landing log. It prints only aggregate tables: no transcript text, ids or task titles (Node 18
-or newer, tested on 24; git on the PATH; no dependencies; about 12 minutes). Re-running it on newer transcripts gives
+or newer, tested on 24; git on the PATH; no dependencies; about 18 minutes). Re-running it on newer transcripts gives
 slightly larger counts than this note. Sections 4 and 5 read the studio's own UI round logs, so they aren't in it; the
 blinded re-judge method is (no screenshots or keys). This note uses "section" for its own order and "finding" for the
 package's:
@@ -408,4 +428,6 @@ package's:
 | Section 8. "Done" claims | finding 9 |
 
 
-The package is in [`package/`](package/).
+The package is in [`package/`](package/). Findings added after this note (11 to 13, the check of finding 9's claim
+patterns, finding 10's pre-registered test and the UI judge check) are in [`findings/`](findings/), each with its
+codebook or test plan.

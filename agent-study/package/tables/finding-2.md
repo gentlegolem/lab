@@ -1,4 +1,4 @@
-<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
+<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 c1f5b5b64977, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
 
 ### Finding 2
 
@@ -11,6 +11,8 @@
 | 2b. Between the passes, briefs with no 150k statement | 479 | 304k | 359 (75%) | 0 | 2 | 0.90 (135) | 97 (264) |
 | 3. Pass 2 tasks (one architect plan, 15 tasks of ~150k, Sonnet builders) | 14 | 127k | 3 (21%) | 0 | 0 | 0.85 (14) | 97 (14) |
 | 4. After pass 2 (from 10-31 21:07 UTC), other tasks | 69 | 167k | 36 (52%) | 1 | 0 | 1.03 (69) | 99 (58) |
+
+Session-clustered 95% intervals (whole sessions drawn 2000 times), budgeted minus unbudgeted median tokens: pass-1 days (1 minus 1x) 11k (117 items, all from one session: no interval); between the passes (2a minus 2b) -164k (95% CI -237k to -43k; 493 items, 8 sessions).
 
 | Wording of the budget in agent briefs | First seen (number of briefs) |
 | --- | --- |

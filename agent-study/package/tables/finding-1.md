@@ -1,4 +1,4 @@
-<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
+<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 c1f5b5b64977, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
 
 ### Finding 1
 
@@ -47,4 +47,6 @@
 Model mix: era A Opus 676 of 715, Sonnet 39 of 715; era B Opus 131 of 316, Sonnet 185 of 316.
 
 Idle pauses: 33 of 1061 runs paused over 15 minutes between two messages (9 over an hour). Median minutes per run from the transcript timestamps: 14.0 first to last message, 14.0 with every pause capped at 10 minutes (agent-minutes as used in the tables: 13.9).
+
+Session-clustered 95% intervals (whole sessions drawn 2000 times): era B minus era A, median tokens per task, 9k (95% CI -236k to 121k; 1031 items, 14 sessions). Feature tasks in era B, Opus ÷ Sonnet median tokens, 3.55x (95% CI 0.84x to 4.78x; 185 items, 7 sessions).
 

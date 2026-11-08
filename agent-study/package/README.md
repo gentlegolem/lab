@@ -74,7 +74,9 @@ hook refusals before it. Set it to a write-up's end date to reproduce its tables
 by date, because it can be rewritten later (a backfill, say): each table's first line gives the ledger's SHA-256, so a
 re-run can tell whether it read the same version. A re-run on Nov 7 from a clean clone read a newer ledger (it changed
 three times during the run) and reproduced every number in the tables, except one count that isn't cut by date:
-finding 8's "searched N coordinator-session logs" counts the logs present at run time (16 then, 15 now; still 0 hits). `RESIDENCY_FIX_AT` (optional,
+finding 8's "searched N coordinator-session logs" counts the logs present at run time (16 then, 15 now; still 0 hits). `finding-6.md` and `finding-10.md` were rebuilt on Nov 7 with added rows (the
+quotes derived from tokens, all tasks before the fix, where the after-fix tasks come from, quotes by model), so their
+first line shows a newer ledger version; every row they had before is unchanged. `RESIDENCY_FIX_AT` (optional,
 default 2026-11-04T01:00:00Z) is when the minutes fix of finding 10 took effect.
 
 It needs Node 18 or newer (tested on 24) and git on the PATH. There's no npm install and there are no dependencies.

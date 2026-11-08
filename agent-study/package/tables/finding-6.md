@@ -1,4 +1,4 @@
-<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 7bcbc93575d6, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
+<!-- cut 2026-11-03T19:00:00.000Z, ledger sha256 a1c57c58c2a5, 1062 agent runs, 1054 tasks, 2026-10-10 to 2026-11-03 -->
 
 ### Finding 6
 
@@ -38,12 +38,12 @@
 
 #### Mix per period (could a change in task mix explain the movement?)
 
-| Period | tasks | Sonnet share | Opus share | Feature-in-existing-system share | Research + verify + tooling share | Median token estimate | Estimate line in the brief | Seeded ledger row |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| P0 before the ledger tool | 38 | 0% | 100% | 87% | 8% | 140k | 0% | 0% |
-| P1 rolling ratios available, no fixed factor | 43 | 56% | 44% | 49% | 19% | 120k | 5% | 0% |
-| P2 fixed factors published, line optional | 51 | 31% | 69% | 82% | 6% | 400k | 100% | 0% |
-| P3 estimate line required | 176 | 76% | 24% | 49% | 24% | 160k | 100% | 0% |
+| Period | tasks | Sonnet share | Opus share | Feature-in-existing-system share | Research + verify + tooling share | Median token estimate | Estimate line in the brief | Seeded ledger row | Minutes estimate = tokens / 10k (within 0.5 min) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| P0 before the ledger tool | 38 | 0% | 100% | 87% | 8% | 140k | 0% | 0% | 38 of 38 |
+| P1 rolling ratios available, no fixed factor | 43 | 56% | 44% | 49% | 19% | 120k | 5% | 0% | 41 of 43 |
+| P2 fixed factors published, line optional | 51 | 31% | 69% | 82% | 6% | 400k | 100% | 0% | 0 of 51 |
+| P3 estimate line required | 176 | 76% | 24% | 49% | 24% | 160k | 100% | 0% | 1 of 176 |
 
 #### Same period, one slice at a time (holding model or class fixed; cells with 5 or more tasks; tokens a/e median, then minutes)
 

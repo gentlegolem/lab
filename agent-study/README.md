@@ -58,7 +58,7 @@ The 150k-token task maximum lived in the architect's plans and the briefs built 
 - **Pass 1 (Oct 19):** 35 tasks for a new game slice, each "sized for one fresh agent", with briefs saying "aim for
   ≤ 150k tokens".
 - **Pass 2 (Oct 31):** a feature on existing code split into 15 tasks of about 150k for fresh Sonnet agents (14 have a
-  transcript). The reason was the studio's own data: in tasks of 100–200k tokens, agents re-read about 96k of context
+  transcript). The reason, in the plan, was the studio's own data (the planner's count over 670 runs since Oct 19): in tasks of 100–200k tokens, agents re-read about 96k of context
   per call; in tasks of 200–400k, about 175k.
 
 | Tasks | n | Median tokens | Over 150k |
@@ -294,7 +294,7 @@ change.
 - The ledger applies the factor as designed (median recorded ÷ written = 0.34, n = 26).
 - Like for like (×0.34 on both sides), the error is 45% before and 38% after; the difference is within the noise at
   this n. The gain is the correction now being applied at all, not better estimates.
-- The 26 tasks come from 2 coordinator sessions over about 1.5 days, so the effective sample is much smaller than 26.
+- The 26 tasks come from 2 coordinator sessions over about 1.6 days, so the effective sample is much smaller than 26.
   The same change added a reminder to brief writers not to pre-apply the factor, which also bears on the quotes.
 - The median quote rose from 40 to 55 minutes, but that is mix: Opus tasks were quoted much higher after the fix
   (median 45 → 120) and also ran longer, while Sonnet quotes barely moved (35 → 37.5).

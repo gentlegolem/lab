@@ -382,11 +382,12 @@ function f6trend() {
 	const wk = (ms) => { const d = new Date(ms); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
 	for (const key of [...new Set(ts.map((t) => wk(t.ts)))].sort()) o += line(`week of ${key}`, ts.filter((t) => wk(t.ts) === key)) + '\n';
 	// mix
-	o += '\n#### Mix per period (could a change in task mix explain the movement?)\n\n' + head('Period', 'tasks', 'Sonnet share', 'Opus share', 'Feature-in-existing-system share', 'Research + verify + tooling share', 'Median token estimate', 'Estimate line in the brief', 'Seeded ledger row') + '\n';
+	o += '\n#### Mix per period (could a change in task mix explain the movement?)\n\n' + head('Period', 'tasks', 'Sonnet share', 'Opus share', 'Feature-in-existing-system share', 'Research + verify + tooling share', 'Median token estimate', 'Estimate line in the brief', 'Seeded ledger row', 'Minutes estimate = tokens / 10k (within 0.5 min)') + '\n';
 	for (const [nm, a, b] of EST_PERIODS) {
 		const set = ts.filter((t) => t.ts >= a && t.ts < b); const n = set.length;
 		const sh = (f) => pct(set.filter(f).length, n);
-		o += row(nm, n, sh((t) => t.model === 'Sonnet'), sh((t) => t.model === 'Opus'), sh((t) => /^feature/i.test(t.taskType)), sh((t) => /^(research|engine verify|tooling)/i.test(t.taskType)), k(med(set.map((t) => t.estTok))), sh((t) => t.runs.some((r) => r.briefEst)), sh((t) => t.runs.some((r) => r.seeded))) + '\n';
+		const derived = set.filter((t) => t.estMin > 0 && Math.abs(t.estMin - t.estTok / 1e4) <= 0.5).length;
+		o += row(nm, n, sh((t) => t.model === 'Sonnet'), sh((t) => t.model === 'Opus'), sh((t) => /^feature/i.test(t.taskType)), sh((t) => /^(research|engine verify|tooling)/i.test(t.taskType)), k(med(set.map((t) => t.estTok))), sh((t) => t.runs.some((r) => r.briefEst)), sh((t) => t.runs.some((r) => r.seeded)), `${derived} of ${n}`) + '\n';
 	}
 	o += '\n#### Same period, one slice at a time (holding model or class fixed; cells with 5 or more tasks; tokens a/e median, then minutes)\n\n' + head('Slice', ...EST_PERIODS.map((p) => p[0].split(' ')[0])) + '\n';
 	const slices = [['Opus', (t) => t.model === 'Opus'], ['Sonnet', (t) => t.model === 'Sonnet'], ['Feature in an existing system', (t) => /^feature/i.test(t.taskType)], ['Fix pass', (t) => /^fix/i.test(t.taskType)]];
@@ -418,13 +419,20 @@ function f10() {
 		['After the fix', ts.filter((t) => t.ts >= FIX10)]];
 	let o = `Fix applied from ${new Date(FIX10).toISOString().slice(0, 16)}Z. Tasks of 5+ tool calls with a minutes estimate and measured minutes.\n\n`;
 	o += head('Set', 'n', 'Bias as written (median actual / quote, IQR)', 'Error as written (median abs)', 'Error if x0.34 applied', 'n with a recorded figure', 'Error as recorded by the ledger') + '\n';
-	for (const [nm, set] of sets) {
+	for (const [nm, set] of [...sets, ['All tasks before the fix (any estimate)', ts.filter((t) => t.ts < FIX10)]]) {
 		const a = set.map((t) => t.minutes / t.estMin);
 		const rec = set.filter((t) => t.estMinRec > 0);
 		o += row(nm, set.length, w(a), ape(a), ape(a.map((x) => x / 0.34)), rec.length, ape(rec.map((t) => t.minutes / t.estMinRec))) + '\n';
 	}
 	const chk = sets[1][1].filter((t) => t.estMinRec > 0 && t.estMin > 0);
 	o += `\nCheck that the ledger applied the factor (after the fix): median recorded / written = ${r2(med(chk.map((t) => t.estMinRec / t.estMin)))} (n ${chk.length}; 0.34 expected).\n`;
+	const aft = sets[1][1]; const tsA = aft.map((t) => t.ts);
+	o += `\nWhere the after-fix tasks come from: ${new Set(aft.map((t) => t.runs[0].session)).size} sessions, first to last task ${aft.length ? ((Math.max(...tsA) - Math.min(...tsA)) / 86400e3).toFixed(1) : 'n/a'} days apart.\n`;
+	o += '\n' + head('Median quote / actual by model (min)', 'Opus n', 'Opus quote', 'Opus actual', 'Sonnet n', 'Sonnet quote', 'Sonnet actual') + '\n';
+	for (const [nm, set] of sets) {
+		const by = (m) => { const s = set.filter((t) => t.model === m); return [s.length, m1(med(s.map((t) => t.estMin))), m1(med(s.map((t) => t.minutes)))]; };
+		o += row(nm, ...by('Opus'), ...by('Sonnet')) + '\n';
+	}
 	o += '\n' + head('Mix (could a change in task mix explain a movement?)', 'tasks', 'Sonnet share', 'Opus share', 'Feature-in-existing-system share', 'Median quote (min)', 'Median actual (min)') + '\n';
 	for (const [nm, set] of sets) {
 		const sh = (fn) => pct(set.filter(fn).length, set.length);

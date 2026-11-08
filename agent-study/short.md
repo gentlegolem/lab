@@ -6,7 +6,7 @@
 *Jonathan Gauvin, November 2026. Medians unless stated. Intervals are 95%, from drawing whole sessions 2,000 times.*
 
 <!-- OWNER'S VOICE: carried over unchanged from the full version. Rewrite in your own words before publishing. -->
-I run a small game studio where most of the code is written by Claude agents.
+I make games mostly on my own, across nine projects.
 
 <!-- OWNER'S VOICE: both rubric reviewers ask for one line on who did what: what you designed and decided, what the agents ran and drafted. Write it yourself. -->
 ## The data
@@ -42,12 +42,12 @@ Agents see the gate's verdict before they write "landed", so the 96% shows that 
 doesn't test their own judgment.
 
 ## 2. Guardrails
-Hooks refused 70 in-place `sed -i` edits on synced source folders and 27 long reads or dumps; the gate refused 56 of
-497 landing attempts for a failed check. Blind labels of what agents did next (κ 0.85): 36 of the 70 `sed -i`
-refusals hit calls the hook isn't meant to stop. Of the 61 real refusals, agents did what the refusal asked in 51 and
-routed around it in 2; none retried. After 12 long line-range refusals, 8 agents re-read with the tool the refusal
-names, and 5 of them asked for at least 97% of the refused range: the rule held in form more than in effect
-([finding 13](findings/finding-13.md)).
+The `sed -i` hook on synced source folders fired 70 times (34 real, 36 false alarms); other hooks refused 27 long
+reads or dumps and 1 brief without an estimate line, and the gate refused 56 of 497 landing attempts for a failed
+check. Blind labels of the refusals and what agents did next (κ 0.85): the false alarms are calls the hook isn't meant
+to stop; of the 61 real hook refusals, agents did what the refusal asked in 51 and routed around it in 2; none
+retried. After 12 long line-range refusals, 8 agents re-read with the tool the refusal names, and 5 of them asked for
+at least 97% of the refused range: the rule held in form more than in effect ([finding 13](findings/finding-13.md)).
 
 ## 3. A planner's forecast against what it delivered
 An architect pass split a feature into 15 tasks of about 150k tokens. The cost of the unsplit work (9.3M

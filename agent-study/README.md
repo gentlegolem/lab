@@ -1,4 +1,4 @@
-> **DRAFT, not yet published.** Draft v3.5 (2026-11-03). Numbers may still change before release.
+> **DRAFT, not yet published.** Draft v3.6 (2026-11-08). Numbers may still change before release.
 
 # What one multi-agent coding studio measured about its own setup and its agents' claims
 
@@ -6,15 +6,15 @@
 
 ## The short version
 <!-- OWNER'S VOICE: personal framing. Rewrite in your own words before publishing. -->
-I run a small game studio where most of the code is written by Claude agents. When I checked my own setup changes
+I make games mostly on my own, across nine projects. When I checked my own setup changes
 against the data:
 - **Tasks planned to a token budget were small, but so were unbudgeted tasks on the same nights:** size followed the
   work, not the budget line (section 1).
 - **The planning itself has a cost**, and in the one case I could measure, I can't tell whether it paid for itself.
 - **The plan priced its own cost accurately; its promised benefit wasn't confirmed** (section 2, n = 1). It promised a
   24% saving, then 17%. The split tasks cost at least 15% more than the plan forecast, and against the forecast for the
-  unsplit work the saving is at most about 4%. That baseline is itself a forecast: if it was about 5–8% too low, the
-  planner (0.56M plan-equivalent tokens) paid for itself.
+  unsplit work the saving is at most about 4%. That baseline is itself a forecast: the planner (0.56M plan-equivalent
+  tokens) breaks even if it was about 2% too low (5–8% counting the 15th task, which has no transcript).
 - **The estimate-correction loop I built didn't make estimates more reliable:** the agents didn't apply the correction
   they were given.
 - **A first check of agents' own claims** (section 8): "landed" matched the landing log 96% of the time. Every "checks
@@ -104,7 +104,7 @@ ran, so the same work can be compared with itself:
 | Net, after the architect's 0.56M | positive | **can't tell:** at best −0.16M against the forecast (−0.45M to −0.74M with the 15th task), but the pass breaks even if the unsplit work would really have cost about 2% more than forecast (5–8% with the 15th task) |
 
 The plan priced its own cost well. Its benefit can't be confirmed: the "before" side (9.3M) is itself an agent
-forecast, and an error of 5–8% in it is enough to flip the result. No forecast here has been shown to be that precise
+forecast, and an error of about 2% in it (5–8% with the 15th task) is enough to flip the result. No forecast here has been shown to be that precise
 (per-task token errors ran 20–80%, section 6). One planned task has no transcript, so even the 4% is an upper bound.
 What can be said: the split tasks cost at least 15% more than the plan said they would, so the promised 17–24% saving
 didn't show. Whether the pass paid for its architect can't be told from this data.
@@ -315,8 +315,9 @@ change.
 ## 7. What the guardrails caught
 | Guardrail (refusals in transcripts; attempts, not distinct mistakes) | Count |
 |---|---|
-| In-place `sed -i` on synced source folders | 70 |
+| `sed -i` hook fired on synced source folders (34 real, 36 false alarms) | 70 |
 | Whole-file reads over 400 lines, long dumps | 27 |
+| Agent brief without an estimate line | 1 |
 | Landing gate: refused because a check failed (of 497 attempts) | 56 (11%) |
 
 The other gate attempts: 410 landed, 27 hit a merge conflict, 3 had nothing to land, 1 was a dry run. There is no hook for "done with
@@ -325,7 +326,7 @@ agents did after a hook refusal ([finding 13](findings/finding-13.md)): 36 of th
 hook isn't meant to stop; of the 61 real ones across hooks, 51 complied and 2 routed around. After a
 failed check, blind labels of the 33 with edits: 14 fixed the code, 6 loosened a check or test, mostly by casting to
 the type checker's catch-all type (low confidence, [finding 12](findings/finding-12.md)). Edits
-outside an agent's task are prevented, but nothing logs them, so they are **not measured**.
+outside an agent's task are not blocked or logged (no hook or gate check covers them), so they are **not measured**.
 
 ## 8. A first measurement: how often "done" held up (package: finding 9)
 This is a first, small measurement of the study I propose below, not the study. A script read the final report of 1,010

@@ -29,6 +29,23 @@ function dirsOf(root, s) {
 	return out.filter((d) => fs.existsSync(d.dir) && fs.statSync(d.dir).isDirectory());
 }
 
+// A file's lines, read in chunks: one transcript can pass Node's 512 MB string limit. Same lines as split('\n').
+function* linesOf(file) {
+	const fd = fs.openSync(file, 'r');
+	const buf = Buffer.allocUnsafe(Math.max(1, Math.min(32 << 20, fs.fstatSync(fd).size)));
+	const dec = new (require('string_decoder').StringDecoder)('utf8'); // keeps a character split across two chunks whole
+	let rest = '';
+	let n;
+	try {
+		while ((n = fs.readSync(fd, buf, 0, buf.length, null)) > 0) {
+			const parts = (rest + dec.write(buf.subarray(0, n))).split('\n');
+			rest = parts.pop();
+			yield* parts;
+		}
+		yield rest + dec.end();
+	} finally { fs.closeSync(fd); }
+}
+
 // One transcript -> totals. models = distinct message.model values on assistant messages (the real model).
 function parseTranscript(file) {
 	const byMsg = new Map();
@@ -37,7 +54,7 @@ function parseTranscript(file) {
 	const t = { input: 0, output: 0, cacheWrite: 0, cacheRead: 0, calls: 0, toolCalls: 0, first: null, last: null, model: '', brief: '', briefChars: 0, skills: [] };
 	const skills = new Set();
 	let briefSeen = false;
-	for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+	for (const line of linesOf(file)) {
 		if (!briefSeen && line.includes('"type":"user"')) { // the agent's first prompt (its brief): ledger.js reads an "ESTIMATE:" line from it
 			briefSeen = true;
 			try {
@@ -97,4 +114,4 @@ function loadRuns(opts = {}) {
 	return rows;
 }
 
-module.exports = { ROOT, loadRuns, parseTranscript };
+module.exports = { ROOT, loadRuns, parseTranscript, linesOf };

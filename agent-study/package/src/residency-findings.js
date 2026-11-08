@@ -489,8 +489,8 @@ function f10() {
 // read a big transcript in 32 MB chunks (the main-session logs are hundreds of MB: too big for one string)
 function eachLine(file, cb) {
 	const fd = fs.openSync(file, 'r');
-	const buf = Buffer.alloc(32 << 20);
-	const dec = new (require('string_decoder').StringDecoder)('utf8'); // keeps a character split across two chunks whole
+	const buf = Buffer.allocUnsafe(Math.max(1, Math.min(32 << 20, fs.fstatSync(fd).size))); // no 32 MB per small file
+	const dec =new (require('string_decoder').StringDecoder)('utf8'); // keeps a character split across two chunks whole
 	let rest = '';
 	let n;
 	while ((n = fs.readSync(fd, buf, 0, buf.length, null)) > 0) {

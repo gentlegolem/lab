@@ -3,7 +3,7 @@
 
 # What one multi-agent coding studio measured about its own setup and its agents' claims
 
-*Jonathan Gauvin, November 2026. Medians unless stated. Intervals are 95%, from drawing whole sessions 2,000 times. κ is agreement between two blind labellers beyond chance (1 is perfect, 0 is chance).*
+*[Jonathan Gauvin](https://www.linkedin.com/in/jonathangauvin), November 2026. Medians unless stated. Intervals are 95%, from drawing whole sessions 2,000 times. κ is agreement between two blind labellers beyond chance (1 is perfect, 0 is chance).*
 
 <!-- OWNER'S VOICE: carried over unchanged from the full version. Rewrite in your own words before publishing. -->
 I make games mostly on my own, across nine projects.
@@ -117,10 +117,14 @@ own records, not a new method ([more](README.md#related-work)).
 The agents' own forecasts were the least checked numbers in the system. That is the question I'd like to study: how
 well agents' claims ("this will save X", "done") match what is measured.
 
-<!-- OWNER'S VOICE: this whole section is about you, carried over unchanged (except one section number). Rewrite it yourself. -->
+<!-- OWNER'S VOICE: this whole section is about you. Facts from your CV added 2026-11-08 at your request (roles, titles, team size, degree; nothing private); the wording is still a draft. Rewrite it yourself. -->
 ## About me and the method
-I'm a game engineer and former engineering director (in game development since 2004: AI, gameplay, telemetry,
-technical leadership). The studio runs its product work as closed loops, and this note is one of them:
+I'm a game engineer, in game development since 2004. At Eidos-Montréal I built game AI for the Tomb Raider games
+(GOAP planning; boss, crowd and co-op AI) and Deus Ex: Mankind Divided, then led gameplay teams of 5–8 as technical
+game director on Shadow of the Tomb Raider and Guardians of the Galaxy. As Senior Director of Engineering at Reflector
+Entertainment, I led about 35 technical staff through Unknown 9: Awakening's launch on 5 platforms at once. I hold a
+B.Eng. in automated manufacturing engineering. The studio runs its product work as closed loops, and this note is one
+of them:
 - **Estimates:** every task is estimated and measured; section 4 shows the correction step needs enforcing, not just
   publishing.
 - **UI changes:** rules from comparable games, a check per device, cheap web mockups instead of the engine, a blind

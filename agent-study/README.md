@@ -2,7 +2,7 @@
 
 # What one multi-agent coding studio measured about its own setup and its agents' claims
 
-*Jonathan Gauvin, November 2026. Medians unless stated; each result has its sample size (n) and limits next to it.*
+*[Jonathan Gauvin](https://www.linkedin.com/in/jonathangauvin), November 2026. Medians unless stated; each result has its sample size (n) and limits next to it.*
 
 ## The short version
 <!-- OWNER'S VOICE: personal framing. Rewrite in your own words before publishing. -->
@@ -417,10 +417,14 @@ questions of one working setup's own records. Each source was opened and checked
   ([Greenblatt et al., 2023](https://arxiv.org/abs/2312.06942)). The gate and hooks are cheap trusted checks of that
   kind, measured here in ordinary use, not against an agent trying to subvert them.
 
-<!-- OWNER'S VOICE: this whole section is about you. Rewrite it yourself. -->
+<!-- OWNER'S VOICE: this whole section is about you. Facts from your CV added 2026-11-08 at your request (roles, titles, team size, degree; nothing private); the wording is still a draft. Rewrite it yourself. -->
 ## About me and the method
-I'm a game engineer and former engineering director (in game development since 2004: AI, gameplay, telemetry,
-technical leadership). The studio runs its product work as closed loops, and this note is one of them:
+I'm a game engineer, in game development since 2004. At Eidos-Montréal I built game AI for the Tomb Raider games
+(GOAP planning; boss, crowd and co-op AI) and Deus Ex: Mankind Divided, then led gameplay teams of 5–8 as technical
+game director on Shadow of the Tomb Raider and Guardians of the Galaxy. As Senior Director of Engineering at Reflector
+Entertainment, I led about 35 technical staff through Unknown 9: Awakening's launch on 5 platforms at once. I hold a
+B.Eng. in automated manufacturing engineering. The studio runs its product work as closed loops, and this note is one
+of them:
 - **Estimates:** every task is estimated and measured; section 6 shows the correction step needs enforcing, not just
   publishing.
 - **UI changes:** rules from comparable games, a check per device, cheap web mockups instead of the engine, a blind

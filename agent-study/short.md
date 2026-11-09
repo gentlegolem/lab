@@ -3,7 +3,7 @@
 
 # What one multi-agent coding studio measured about its own setup and its agents' claims
 
-*Jonathan Gauvin, November 2026. Medians unless stated. Intervals are 95%, from drawing whole sessions 2,000 times.*
+*Jonathan Gauvin, November 2026. Medians unless stated. Intervals are 95%, from drawing whole sessions 2,000 times. κ is agreement between two blind labellers beyond chance (1 is perfect, 0 is chance).*
 
 <!-- OWNER'S VOICE: carried over unchanged from the full version. Rewrite in your own words before publishing. -->
 I make games mostly on my own, across nine projects.
@@ -11,7 +11,8 @@ I make games mostly on my own, across nine projects.
 <!-- OWNER'S VOICE: both rubric reviewers ask for one line on who did what: what you designed and decided, what the agents ran and drafted. Write it yourself. -->
 ## The data
 A coordinator agent splits the work, an architect agent plans large features, and specialist agents build in
-separate git worktrees. Every change passes a landing gate that runs automated checks before merging. The study
+separate git worktrees. Every change passes a landing gate, a script that merges it only if the automated checks
+pass. The study
 covers 1,062 subagent runs (1,054 tasks), 2026-10-10 to 2026-11-03 19:00 UTC: Claude Code transcripts, a cost ledger,
 git history and the gate's log, from one studio, one operator and one PC. For scale, the studio's repo has 3,200+
 commits across 9 game projects and 12 shared packages since Oct 7 (a later count, 2026-11-08). The main limit: era, task
@@ -31,8 +32,8 @@ The final reports of 1,010 runs, checked claim by claim
   labellers read their reports: 10 of the 51 say so (20%; 7–41%). Of 51 runs that landed on the first try, none
   mentions a refusal. Agreement κ 0.89 ([finding 11](findings/finding-11.md)).
 - **What agents changed after a failed check:** of 33 failures followed by edits, 14 fixed the code, 6 loosened a
-  check or test (mostly a cast to the type checker's catch-all type), 6 updated a test to match intended behaviour
-  ([finding 12](findings/finding-12.md); 33 cases, low confidence).
+  check or test (mostly a cast to the type checker's catch-all type), 6 updated a test to match intended behaviour,
+  7 unclear ([finding 12](findings/finding-12.md); 33 cases, low confidence).
 - **How well the claim patterns read:** blind labels of 375 sentences (κ 0.94) say a match is the claim 73–98% of
   the time, by kind. Only 12 of the 33 reports counted as contradicted made the claim (5 "landed", 7 "tests", 0
   "engine"): fewer false claims than the patterns showed. Some claims are missed ("committed and pushed"), so claim
@@ -52,7 +53,8 @@ and 5 of them asked for at least 97% of the refused range: the rule held in form
 
 ## 3. A planner's forecast against what it delivered
 An architect pass split a feature into 15 tasks of about 150k tokens. The cost of the unsplit work (9.3M
-plan-equivalent tokens: tokens plus 10% of cache reads) was forecast before it ran.
+plan-equivalent tokens: tokens plus 10% of cache reads, the context re-read each turn, as the planner priced its
+plans) was forecast before it ran.
 
 | | Forecast | Measured |
 |---|---|---|

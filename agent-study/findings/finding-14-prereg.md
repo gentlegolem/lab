@@ -81,6 +81,63 @@ alternative (3 tasks in a row, about 400k); the 5-task plan is the one run.
   the estimate line are the studio's.
 - Both builds share the machine and the rate limits at the same time.
 
-## Result
+## Result (2026-11-08, both builds the same evening)
 
-Pending the builds.
+**Both builds finished,** every step with 0 failing tests. Neither reached the cap, and no run was restarted.
+
+| | A: one agent | B: architect + 5 tasks |
+|---|---|---|
+| Runs | 1 (Sonnet) | 6 (architect on Opus, 5 tasks on Sonnet) |
+| Agent-minutes | 2.7 | 18.1 (architect 13.0, tasks 5.1) |
+| Wall-clock minutes | 2.7 | 18.5 (architect 13.0, coordinator 1.3, build 4.3) |
+| Reported tokens | 112k | 613k (architect 347k, tasks 266k) |
+| Plan-equivalent tokens | 204k | 973k (architect 447k, tasks 526k) |
+| Tests passed (hard failures) | 943 of 947 (0; 4 soft) | 946 of 947 (0; 1 soft) |
+
+**Minutes: x0.34 was closer in both conditions, so the replay agrees with section 4, but both methods were far too
+high.**
+
+| | Measured | Raw quote, error | Raw x 0.34, error |
+|---|---|---|---|
+| A, agent-minutes | 2.7 | 35, 92% | 11.9, 77% |
+| B, agent-minutes | 18.1 | 70, 74% | 23.8, 24% |
+| B, wall-clock | 18.5 | 50, 63% | 17.0, 9% |
+
+A's build took 0.08 of its raw quote; even with x0.34 it was quoted 4.4 times too high. B's totals came close only
+because the architect's own 13 minutes, forecast exactly, made up most of them: its 5 tasks took 5.1 of the 57 minutes
+they were quoted.
+
+**Cost of the split: it saved nothing, as the architect forecast, but cost far more than forecast.** The plan put B at
+2.0 times A's reported tokens (665k against 330k). Measured, B cost 5.5 times A (613k against 112k), 4.8 times in
+plan-equivalent: a measured saving of -377% against the forecast -101%. The tasks themselves came in at 0.49 of their
+token forecast (266k against 540k), not 15% over as in section 3, so the first half of the pre-registered rule fails
+and the second half holds. The largest single cost was the architect: 347k reported against 125k forecast (2.8
+times), 46% of B's plan-equivalent, and its 13 minutes are 4.8 times A's whole build. Wall-clock, the only gain the
+plan forecast, came out 6.9 times A's.
+
+**Checks before these numbers are used** (asked by HQ):
+1. **Whole runs.** Time and tokens come from each run's full transcript (first to last message, every model call),
+   read by the package's own parser. No run started a sub-agent, and none was restarted. A's span (2.77 min) matches
+   the harness's own duration for that run (166 s).
+2. **Their own code.** No run used a web tool or a network command (curl, git, npm and the like), and no run read a
+   file outside its own folder. All code was written through file writes, edits or shell heredocs. A's 18.8 KB of
+   code fits its 23.6k output tokens. No file is identical between A and B. Exceptions: T2 and T4 wrote helper
+   scripts to temp folders outside B's folder (generators that read B's own step files). What a transcript can't rule
+   out is the model's memory of mal from training (see Limits).
+3. **Their own files.** Each runner resolves its root from its own folder (A-solo, B-architect), and the test counts
+   above come from this session's own runs on the final code.
+
+**Reading.** On a task the model plainly knows, one agent built the whole interpreter in under 3 minutes. Quotes made
+from the task's size were 13 times too high, and the published x0.34 still left them 4 times too high. The planning
+pass cost more than the build it planned. One replay of one well-known task shows that an architect pass can cost
+more than small or familiar work, and that a minutes factor fitted on other tasks doesn't carry over to it; it
+doesn't say how often.
+
+## Deviations
+
+1. **Token units.** The harness's own per-agent token figure (89k for A, 170k for the architect) is not the
+   pre-registered measure; the tables use reported = input + output + cache writes, from the transcripts.
+2. **Wall-clock.** B's includes 1.3 minutes between the architect's end and T1's start, while this session committed
+   the pre-registration; without them, 17.3 minutes.
+3. **Outside the folder.** T2 and T4 wrote helper scripts to temp folders, against "work only inside this folder"
+   (check 2).

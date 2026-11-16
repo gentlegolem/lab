@@ -131,6 +131,9 @@ read after the fact: it shows the earlier numbers weren't an artefact of one stu
 - The rerun rule makes "pairs run twice" a biased sample of failures, so the pre-registered flake rate overstates
   flakiness; the 4.6% floor and the 80% rerun figure bracket it.
 - The estimate pairs were picked by the HQ session after the fact; quotes that stood out may be over-represented.
+- (Found 2026-11-16, after the result.) The bot reports are main's run folder only, and its last report is from
+  Sat 14 Nov, 03:47 ET: Q3 covers the first 58 of the jam's 96 hours. The worktrees' own runs were left out. Finding 16a
+  (`finding-16a-prereg.md`) adds them as a separate, pre-registered addendum; the numbers above don't change.
 
 ## Deviations
 1. **Bookkeeping files.** Finding 9's code takes a list of bookkeeping files to leave out of the rework signal; the

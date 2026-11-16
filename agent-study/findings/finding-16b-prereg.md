@@ -57,3 +57,47 @@ log-rank test: "differs" if p < 0.05 (the direction read from the 24-hour shares
 - The event is the same proxy as finding 9's: a commit whose message reads like a fix and touches the task's files. It
   can be a fix aimed at another task that shares files, or planned iteration rather than a bug.
 - One jam, observational; a direction, not a rate or a cause.
+
+## Result (2026-11-16)
+The code check passed again (the event scan matches `reworkSignal` on all 213 tasks at 1 and 3 days), and both rules ran
+as written. Numbers from `data/megajam2026/results-survival.json` (`node analyze_survival.js`).
+
+**The tasks.** 213 tasks with code: 152 had a first fix before the submitted build, 61 were still untouched when it was
+submitted (counted as untouched up to then).
+
+**Rule 1. Agrees: 16% were still untouched after 3 days.**
+
+| Hours after the task finished | 6 | 12 | 24 | 48 | 72 |
+|---|---|---|---|---|---|
+| Share with no fix yet (95% interval) | 50.8% (43.9–57.7) | 34.4% (27.7–41.1) | 30.2% (23.6–36.7) | 17.5% (10.3–24.6) | 16.1% (9.0–23.2) |
+| Tasks still watched | 96 | 60 | 35 | 13 | 12 |
+| Share with no material rework yet | 97.1% | 92.2% | 90.3% | 86.0% | 86.0% |
+
+- The median time to a first fix was **6.1 hours**: half of all finished tasks got one within about 6 hours.
+- At 72 hours, 16.1% were still untouched, well under the 50% line, and lower than finding 16's 24% for the first day's
+  tasks alone. Only 12 tasks were still being watched at 72 hours, so the interval is wide (9–23%).
+- Material rework is rarer over the whole jam than finding 16's 36% suggested: an estimated 86% of tasks had not reached
+  it after 72 hours. Of the 50 first-day tasks finding 16 scored, 18 reached it within 72 hours; of the other 163 tasks,
+  4 did.
+
+**Rule 2. Early and late work: no difference found in how fast the first fix came.** Log-rank chi-square 1.31, p = 0.25.
+Untouched at 24 hours: 26.5% of the 83 tasks finished in the first half, 33.0% of the 130 in the second half (medians 5.5
+and 6.7 hours).
+
+**By role (described).** Untouched at 6 and 24 hours: gameplay (89 tasks) 39.5% and 11.5%, median 5.3 hours; prototype
+(20) 40% and 35%, median 4.1 hours, and every one got a fix in the end; art (26) 80.8% and 63.5%, median 41.8 hours; QA
+(23) 82.6% and 82.6%.
+
+**Added after the pre-registration (exploratory, deviation 1).** The material-rework gap above is a phase effect: 21 of
+the 83 first-half tasks reached material rework, against 1 of the 130 second-half tasks. With the same survival method,
+79.5% of first-half tasks were free of material rework at 24 hours, against 99.1% of second-half tasks (log-rank
+chi-square 21.3, p < 0.001). Second-half work got its first fix just as fast, but the fixes were small. This was not a
+pre-registered test; it is a lead for the next run, not a result.
+
+**Reading.** Following every task to the deadline confirms finding 16 and section 8: most "done" work gets a fix, and
+fast: half of it within about 6 hours, five in six within 3 days. What finding 16's 3-day rule couldn't see is that
+material rework belonged to the first half of the jam, and that later work got small touch-ups instead (exploratory). A share of material rework measured on early work alone overstates it for a whole run.
+
+## Deviations
+1. **Material rework by phase** (above) was added after the result, to explain why the jam-wide material share is much
+   lower than finding 16's. It is labelled exploratory and has no rule.

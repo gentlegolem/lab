@@ -391,6 +391,12 @@ observational and after the fact ([finding 16](findings/finding-16-prereg.md); d
   folder only, which ends on Sat 14 Nov at 03:47 ET. Adding the 267 real reports the agents ran in their worktrees
   (pre-registered first) keeps the verdict: 58% of the 74 pairs run twice were flaky, at least 5.9% of all 728 pairs, and
   43 of 61 rerun failures passed (70%). Reports now reach Sun 13:56 ET, but only 40 of the jam's 97 hours have one.
+- **Every task, up to the deadline ([finding 16b](findings/finding-16b-prereg.md)):** the 3-day windows above closed
+  for only 50 tasks. Following all 213 tasks with code from the moment each finished until its first fix or the
+  submitted build (a Kaplan–Meier estimate, pre-registered first) agrees: half had a first fix within 6.1 hours, 30%
+  were untouched after a day and 16% after 3 days (only 12 tasks still watched by then). Work finished in the jam's
+  second half got its first fix just as fast (p = 0.25), but those fixes were small: 1 of 130 later tasks reached material
+  rework, against 21 of 83 earlier ones (exploratory). The 36% material share above describes early work, not the whole run.
 - **Limits:** one jam, read after the fact. The 3-day windows that closed cover the first day and a half, mostly
   prototype work. The quote pairs were picked afterwards by the operator's HQ session, and every quote came from an
   agent. The judges' result isn't due until Jan 29, 2027.

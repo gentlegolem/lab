@@ -16,6 +16,7 @@ Epic's MegaJam (Nov 12–15, 2026). Pinned to the jam repo's submitted build, `4
 | `playtests-archive.tsv` | finding 16a: one row per bot report from the jam's worktrees, same columns plus the tree and `dup_of_main` |
 | `MANIFEST-archive.json` | finding 16a: hash of the archive's file list and of the table, counts, the check that main's reports match |
 | `results-addendum.json` | finding 16a's analysis output |
+| `results-survival.json` | finding 16b's output: time to the first fix and to material rework, Kaplan–Meier, by phase and role |
 
 No game code, assets, sourced content, author names or emails, commit bodies or receipts. Email addresses and absolute
 local paths are replaced by `<email>`, `<repo>` or `<local path>`. The playtest runs are git-ignored in the jam repo, so
@@ -40,3 +41,12 @@ node analyze_addendum.js
 ```
 
 `analyze_addendum.js` stops unless it first reproduces finding 16's bot numbers on main alone.
+
+Finding 16b reads the same snapshot, with no new data:
+
+```
+node analyze_survival.js
+```
+
+It stops unless its event scan first reproduces finding 9's `reworkSignal` on every task at 1 and 3 days
+(`F16B_CHECK=1` runs only that check).

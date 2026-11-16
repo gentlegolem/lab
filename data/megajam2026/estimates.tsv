@@ -1,0 +1,90 @@
+section	#	What	Who	Estimate	Actual	Ratio	Source	ETA
+A. Duration estimates (56)	1	Night 2 crew in Blast (C2-lite)	HQ	6 h	47.7 min (crew test failed, fixed in a 55.9-min shared row)	0.13 (≤0.29)	Q:8; L gameplay-1112-1652, -1800	
+A. Duration estimates (56)	2	Night 2 audio pass	HQ	3 h	47.2 min	0.26	Q:11; L gameplay-1112-1655	
+A. Duration estimates (56)	3	Tripo batch sheet	HQ	0.5 h	1.5 min	0.05	Q:15; L art-1112-1652	
+A. Duration estimates (56)	4	Dev log material	HQ	0.5 h	2.4 min	0.08	Q:16; L lead-1112-1800	
+A. Duration estimates (56)	5	Accident-first scenes + call-sheet cards	HQ	6-10 h + 2 h	75.5 + 46.3 min	0.20 (?)	Q:9-10; L gameplay-1112-1800-2, -1918	
+A. Duration estimates (56)	6	BTO v2 fixes 1+3	HQ review	3-5 h + 2-3 h	33.1 + 5.7 min	0.10	REVIEW_DAY2.md:72,74; L bto-v2-1112-0856, -0931	
+A. Duration estimates (56)	7	Arcade scene	AtlasJam	~4 h	39.3 min	0.16	Q:111; L gameplay-1112-2140; git cf106292	
+A. Duration estimates (56)	8	Lane 1 merge, 4 C++ conflicts	AtlasJam	~60 min	merge 21:14, on main by 22:10 at the latest	≤0.4 (?)	Q:108,111,120	
+A. Duration estimates (56)	9	GASP clips only	AtlasJam	4-6 h	20.2 min	0.07	Q:187; L gasp-1114-1148	
+A. Duration estimates (56)	10	Painted faces	HQ	~2 h	29.2 min	0.24	36h-Scope.md:160; L faces-1114-1014	
+A. Duration estimates (56)	11	Director's Cut replay	HQ	4-5 h	31.5 min	0.12	L dcut-1114-1047	
+A. Duration estimates (56)	12	Tape rewind sound + Chase music bed	HQ	1-2 h	41.2 min	0.46	L audio5-1114-1122	
+A. Duration estimates (56)	13	Trails v1 + arrow mode	AtlasJam	~3 h + ~1 h	32.0 min	0.13	Q:251,267,269; L trails-1114-1631	
+A. Duration estimates (56)	14	042 suite (94 jobs, 2 slots)	AtlasJam	~80 min	~60-70 min	0.81	Q:294,299,314	
+A. Duration estimates (56)	15	"E off" in the C lesson	AtlasJam	~1 h	98 min (lane did 3 other items too)	1.6 (?) LOW	Q:296,327; L tutor-1114-1756	
+A. Duration estimates (56)	16	PRINT IT card revamp	AtlasJam	~3 h	78.8 min	0.44	Q:316; L printcard-1114-1922	
+A. Duration estimates (56)	17	PUZZLES lane	AtlasJam	~2.5 h	68.3 min	0.46	Q:321; L gameplay-1114-1924	
+A. Duration estimates (56)	18	Pad + action table + Controls.ini + remap	AtlasJam	10.5 h	144.3 min	0.23	Q:255,261,351; L controls-1114-1756	
+A. Duration estimates (56)	19	Full suite in the night timetable	HQ + AtlasJam	~2.5 h	79 min	0.53	BUMPS.md:111	
+A. Duration estimates (56)	20	Packaging	HQ	about an hour	72-99 s	~0.02	BUMPS.md:110; Q:391	
+A. Duration estimates (56)	21	044 full suite, 4 slots	AtlasJam	55-65 + ~10 min	≤56 min	≤0.8 (?)	Q:391	
+A. Duration estimates (56)	22	Own character (E1, E3-E6)	AtlasJam	15.5-16 h	264 min over 7 CHAR rows	0.28	Q:176,399; L CHAR-*	
+A. Duration estimates (56)	23	Own font	AtlasJam	4 h	48.6 min	0.20	Q:399; L font45-1114-2320	
+A. Duration estimates (56)	24	Own shapes	AtlasJam	2 h	59.5 min	0.50	Q:399; L shapes45-1114-2320	
+A. Duration estimates (56)	25	Small chase	AtlasJam	8-10 h	156.5 min	0.29	Q:408; L gameplay-1114-2341	
+A. Duration estimates (56)	26	ARC7, notes 1+3	AtlasJam	2.5 h	42.0 min	0.28	Q:431; L gameplay-1115-0656	
+A. Duration estimates (56)	27	NOTES7	AtlasJam	~2.5 h	63.8 min	0.43	Q:431; L gameplay-1115-0656-2	
+A. Duration estimates (56)	28	CHARQA3	AtlasJam	~1 h	21.1 min	0.35	Q:431; L qa-1115-0657	
+A. Duration estimates (56)	29	Draft Lap track rework	AtlasJam	~3 h	60.4 min	0.34	Q:436; L gameplay-1115-0712	
+A. Duration estimates (56)	30	PICKS7	AtlasJam	3 h	62.4 min	0.35	Q:441; L gameplay-1115-0723	
+A. Duration estimates (56)	31	ARC7VIS	AtlasJam	~2.5 h	56.1 min	0.37	Q:446; L gameplay-1115-0755	
+A. Duration estimates (56)	32	m22 suite, remaining part	AtlasJam	~40 min	22 min	0.55	Q:457	
+A. Duration estimates (56)	33	m25 full suite	AtlasJam	~45 min	33 min	0.73	Q:461,468	
+A. Duration estimates (56)	34	Clock Tower scene	HQ	3-4 h	33.4 min	0.16	Q:460; L level-1115-0942	
+A. Duration estimates (56)	35	m27 full suite	AtlasJam	~45 min	36 min	0.80	Q:482	
+A. Duration estimates (56)	36	m28 --final suite	AtlasJam	~35 min	~37-40 min	~1.1	Q:505,527	
+A. Duration estimates (56)	37	ACTION! list	HQ	1-1.5 h	60.1 min	0.80	Q:486; L gameplay-1115-1102-2	
+A. Duration estimates (56)	38	ACTION! list	AtlasJam	1.5 h + 45 min	111 min	0.82	Q:487,552	
+A. Duration estimates (56)	39	Mishap icons	HQ	2.5-3 h	72 min	0.44	Q:488,531	
+A. Duration estimates (56)	40	Mishap icons	AtlasJam	1.5 h + 30 min	72 min	0.60	Q:489; L gameplay-1115-1102	
+A. Duration estimates (56)	41	NETFIX	AtlasJam	~45 min	17.2 min	0.38	Q:511; L qa-1115-1144	
+A. Duration estimates (56)	42	Jump pose	AtlasJam	~1 h	54.8 min	0.91	Q:516; L art-1115-1150	
+A. Duration estimates (56)	43	Knee and push-up climbs	AtlasJam	3-3.5 h	60.6 min	0.31	Q:516,553; L gameplay-1115-1151	
+A. Duration estimates (56)	44	HOLDING banner	AtlasJam	~45 min	54.5 min (machine overloaded)	1.21 LOW	Q:524; L gameplay-1115-1214	
+A. Duration estimates (56)	45	WYCTUNE	AtlasJam	~3 h	41.7 min	0.23	Q:533,563; L gameplay-1115-1216	
+A. Duration estimates (56)	46	PROTOPAD	AtlasJam	~2 h	67.5 min	0.56	Q:538; L gameplay-1115-1217	
+A. Duration estimates (56)	47	Draft Lap polish A+B	AtlasJam	5 h 20	61.0 min	0.19	<local path> L gameplay-1115-1230	
+A. Duration estimates (56)	48	Menu Hammerhead	AtlasJam	130-145 min	29.7 min	0.22	Q:544,562; L gameplay-1115-1248	
+A. Duration estimates (56)	49	Small Chase A1-A4 + B1 + B2-lite	AtlasJam	360 min	93.2 min	0.26	Q:546,587; L gameplay-1115-1245	
+A. Duration estimates (56)	50	CLOCKTWR spec pass	AtlasJam	60-90 min	13.0 min	0.17	Q:557,562; L level-1115-1305	
+A. Duration estimates (56)	51	itch stills	HQ subagent	20-30 min	~22-25 min	~1.0	SUBMISSION_PREP.md:234	
+A. Duration estimates (56)	52	m33f full suite	AtlasJam	55-65 min	78 min (another suite took 2 of 4 slots)	1.3 LOW	Q:577,582,590	
+A. Duration estimates (56)	53	NOPEX + add-on	AtlasJam	45-60 min	52 min	0.98	Q:610,618; git e06b6db6	
+A. Duration estimates (56)	54	Clock Tower option (a)	AtlasJam	60-75 min	~21 min	0.31	Q:626,641; git 4c3131d0	
+A. Duration estimates (56)	55	--final packaging	HQ / AtlasJam	~30 min	2-4 min	~0.1	36h-Scope.md:118; Q:599,655,658	
+A. Duration estimates (56)	56	m35g squares fix + camera	AtlasJam	~55 + 5 min	13-17 min	~0.25	Q:668,671,674	
+B. ETA / "ready by" estimates (26)	1	Build 019 checks			04:51	0.60	Q:126-127	~05:20
+B. ETA / "ready by" estimates (26)	2	Arcade black shapes fix			14:54	~0.15	Q:139	16:15
+B. ETA / "ready by" estimates (26)	3	Night 3 build 030 + report			01:20 / 02:02	0.40	Q:162,167	07:00
+B. ETA / "ready by" estimates (26)	4	Night 3c, 6 lanes			7-74 min each	median 0.14	Q:172	08:00-09:30
+B. ETA / "ready by" estimates (26)	5	Build 033			in Latest by 09:14	0.24	Q:181,183	~11:30, then ~12:30
+B. ETA / "ready by" estimates (26)	6	041 packaging			15:04	~0.08	Q:214,223	~15:45
+B. ETA / "ready by" estimates (26)	7	041 suite			16:01	0.54	Q:225,239	~16:50
+B. ETA / "ready by" estimates (26)	8	041 video recut			16:17	0.15	Q:239,241	17:50
+B. ETA / "ready by" estimates (26)	9	042 lanes			17:39	0.43	Q:247,291	~19:15
+B. ETA / "ready by" estimates (26)	10	HANG lane			121.9 min	0.81	Q:323,369	~22:00
+B. ETA / "ready by" estimates (26)	11	043 to Latest			22:54	0.35	Q:380,390	~23:45
+B. ETA / "ready by" estimates (26)	12	044 lanes HUD, MENU, TUTOR, RODIN			23:41 / 23:15 / 23:41 / 23:06	median 0.11	Q:384,396,400,411	04:00 / 02:00 / 01:00 / 00:30
+B. ETA / "ready by" estimates (26)	13	044 to Latest			045 by 01:56	≤0.33	Q:384,416-417	~08:30
+B. ETA / "ready by" estimates (26)	14	Build 045 with own character			01:56	0.20	Q:404,417	11:30-12:30
+B. ETA / "ready by" estimates (26)	15	Glass Box draft			09:03	0.08	Q:453,459	~12:00
+B. ETA / "ready by" estimates (26)	16	KITSAFE			10:43	0.31	Q:479	11:30
+B. ETA / "ready by" estimates (26)	17	m28 noon cut			12:10 (machine load)	1.57 LOW	Q:483,527	~11:40
+B. ETA / "ready by" estimates (26)	18	PADUI			13:20	0.81	Q:513	13:45
+B. ETA / "ready by" estimates (26)	19	SNDFIX			12:49	0.60	Q:516,551	13:30
+B. ETA / "ready by" estimates (26)	20	PADAIM			12:52	0.47	Q:521	14:00
+B. ETA / "ready by" estimates (26)	21	m31, m32 --final			13:41 / 13:47	0.34 / 0.23	Q:547,566,567	15:30 / 17:15
+B. ETA / "ready by" estimates (26)	22	CTRLCARD			14:49	0.20	Q:599,617	15:45
+B. ETA / "ready by" estimates (26)	23	DFLADD			15:36	0.45	Q:641	16:05
+B. ETA / "ready by" estimates (26)	24	COMICVO takes			15:22	0.65	Q:636,638	~15:30
+B. ETA / "ready by" estimates (26)	25	m35f full suite			~16:29-16:32	~0.67	Q:658,671	16:45-17:00
+B. ETA / "ready by" estimates (26)	26	final_day5 video cut			16:17	0.11	Q:664-665	~16:50
+C. Usage / cost (7)	1	Night 2 usage		1.45 pts (2.45 whole night)	23-25% by ~17:30, items still running	≥1.4 LOW (?)	Q:3-19,64; BUMPS.md:33,165	
+C. Usage / cost (7)	2	Night 2b usage		40-45% by 05:45	40% at 06:48	about right	Q:111,127	
+C. Usage / cost (7)	3	044 lane usage		4.3-5.3 pts	87-88% while all 4 ran	~0.2 HIGH (?)	Q:384,386,399	
+C. Usage / cost (7)	4	Rodin credits per prop		~0.5	0.5	1.0	Q:234,303	
+C. Usage / cost (7)	5	Rodin character generations		~0.5 each	1.0 each	2.0 LOW (?)	Q:414	
+C. Usage / cost (7)	6	fal panel 4 regeneration		$0.30-0.60	$0.08	~0.18	Q:333,371	
+C. Usage / cost (7)	7	fal Vera conversions		~$0.03	$0.03	1.0	Q:636,638	

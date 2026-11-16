@@ -1,4 +1,4 @@
-> **DRAFT, not yet published.** Draft v3.6 (2026-11-08). Numbers may still change before release.
+> **DRAFT, not yet published.** Draft v3.7 (2026-11-16). Numbers may still change before release.
 
 # What one multi-agent coding studio measured about its own setup and its agents' claims
 
@@ -370,6 +370,27 @@ The last two rows only show that a call was made, not that it passed: the record
 - "Done" has no direct ground truth; the rework signal is the nearest.
 - No landing log before Oct 24; the newest tasks have open windows; one operator.
 
+## 9. A real run: a 4-day game jam (finding 16)
+The operator and his agents built "Back to One" in Unreal Engine 5.9 for Epic's MegaJam (Nov 12–15, 2026): 1,783
+commits, 253 ledger rows and 571 bot playtest reports. The analysis was pre-registered before it read any value. It is
+observational and after the fact ([finding 16](findings/finding-16-prereg.md); data and scripts in
+[`data/megajam2026/`](../data/megajam2026/)).
+
+| Question | The jam | Earlier result | Verdict |
+|---|---|---|---|
+| "Done" work left alone for 3 days | 24% (n = 50); 36% material rework | 27%; 36% (section 8) | agrees |
+| Time quotes, actual ÷ quote | 0.34, about 3× too high (n = 55) | 0.37, about 2.7× (section 6) | agrees |
+| Median error, as quoted and with ×0.34 | 66% and 52% | 64% and 44% (section 6) | ×0.34 closer |
+| Bot: pairs (scenario, commit) run twice with both a pass and a fail | 65% (24 of 37) | not measured | noisy |
+
+- **The bot figure is inflated by the jam's own rule:** each failure got one solo rerun, so the pairs run twice are
+  mostly failures. Of the 30 failures rerun on the same commit, 24 then passed (80%). Across all 521 pairs, at least 4.6%
+  were flaky. A single red run was weak evidence; a green one held, since a pass was followed by a fail in 4.5% of steps
+  across commits.
+- **Limits:** one jam, read after the fact. The 3-day windows that closed cover the first day and a half, mostly
+  prototype work. The quote pairs were picked afterwards by the operator's HQ session, and every quote came from an
+  agent. The judges' result isn't due until Jan 29, 2027.
+
 ## What I could not measure, and the fix
 I couldn't measure the architect's extra memory, an "aim close to 150k" instruction, or edits outside an agent's
 task. The reason was the same each time: the change wasn't recorded where the data lives. The fix is cheap:
@@ -470,6 +491,7 @@ package's:
 | Section 6. Estimate loop (the minutes fix) | finding 6 (finding 10) |
 | Section 7. Guardrails | finding 7 |
 | Section 8. "Done" claims | finding 9 |
+| Section 9. The game jam | finding 16 (its own scripts, in `data/megajam2026/`) |
 
 
 The package is in [`package/`](package/). Findings added after this note (11 to 13, the check of finding 9's claim

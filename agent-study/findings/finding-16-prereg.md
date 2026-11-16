@@ -72,8 +72,80 @@ minutes. Ratio = actual / estimate; raw error = |ratio - 1|; x0.34 error = |actu
 - The bot runs are not under version control; a run deleted before the snapshot is missing.
 - Judging runs until Jan 29, 2027; the judges' result is not part of this finding.
 
-## Result
-Pending the analysis.
+## Result (2026-11-16)
+All three rules ran as written. Two results agree with the earlier findings; the bot is "noisy" by the rule, for a
+reason the rule didn't foresee. Numbers from `data/megajam2026/results.json` (`node analyze.js`).
+
+**The run.** 1,820 commits reach the submitted build; 1,783 of them fall in the jam (from Nov 12, 00:00 ET), 333 merges.
+The ledger has 253 rows: 247 landed, 4 cut (1.6%), 2 still in progress. The 251 rows with a time record 11,014
+task-minutes, a median of 33 per row.
+
+**Q1. "Done" held up about as often as in the studio: agrees with section 8.**
+
+| Window | Tasks with a closed window | Left alone | Small fix | Material rework | Reverted |
+|---|---|---|---|---|---|
+| 3 days (the rule) | 50 | 12 (24%) | 20 (40%) | 18 (36%) | 0 |
+| 1 day | 145 | 35 (24%) | 92 (63%) | 18 (12%) | 0 |
+| Section 8, 3 days | 369 | 27% | 37% | 36% | 0 |
+
+- 214 of the 247 landed rows list commits; 164 of their 3-day windows were still open at the submitted build, so the
+  rule rests on the first day and a half of the jam.
+- By role (3 days, small n): prototype work was left alone 2 times in 20 and reworked materially 10 times; QA work was
+  left alone 7 times in 9; gameplay 0 in 9.
+- Without the bookkeeping filter (deviation 1), the 3-day share left alone falls to 10%: the ledger and dev-log files
+  are touched by almost every later commit. The verdict is the same either way.
+
+**Q2. Quotes ran about 3x too high, and x0.34 was closer: agrees with section 4.**
+
+| Quotes | Pairs | Median actual / quote | Quoted too high by | Median error, raw | Median error, x0.34 |
+|---|---|---|---|---|---|
+| All | 55 | 0.34 | 3.0x | 66% | 52% |
+| Without the 5 the file marks as doubtful | 50 | 0.31 | 3.2x | 69% | 47% |
+| HQ session (and its reviewers) | 14 | 0.18 | 5.5x | 82% | 63% |
+| The jam's lead session | 39 | 0.37 | 2.7x | 63% | 44% |
+
+- 51 of the 55 tasks took less than quoted. The median ratio, 0.34, is the studio's own correction factor; on these
+  new tasks x0.34 left a median error of 52%, not the 4.4x miss of finding 14's well-known task.
+- Every quote in the file came from an agent session; none from the operator.
+- "Ready by" times (described only): 28 time pairs in 26 rows. The median item was ready 73.5 minutes before its ETA, and
+  1 of 28 was late.
+- Usage and cost (7 rows, described only): mixed units, from a rate-limit share to a few cents of an outside service;
+  no pattern to read.
+
+**Q3. As a single run, the bot is noisy: verdict "noisy" by the rule.**
+- 571 of 572 reports ran against the real game (1 against a mock); 89.5% passed, across 147 scenarios.
+- Of the 37 (scenario, commit) pairs run more than once, 24 (65%) had both a pass and a fail: far over the 10% bar.
+- That share is inflated by the jam's own rule: each failure got one solo rerun. Of 60 failed reports, 30 were rerun on
+  the same commit, and 24 of those (80%) then passed. Counted over all 521 pairs, at least 24 (4.6%) were flaky.
+- Across commits, a pass was followed by a fail in 17 of 374 steps (4.5%).
+- Reading: a single red run was weak evidence, and the rerun rule was what made the bot usable. A green run held: red
+  after green was rare.
+
+**Reading.** On a run outside the studio's own nights, with a hard deadline and different work, the two earlier
+results held: about a quarter of "done" work was left alone for 3 days, and the agents' time quotes ran about 3x too
+high. The studio's x0.34 fitted this jam's new work better than it fitted finding 14's familiar task. This is one jam,
+read after the fact: it shows the earlier numbers weren't an artefact of one studio's nights, not why they hold.
+
+**Limits found in the analysis.**
+- The 3-day windows that closed are the jam's first day and a half, mostly prototype and setup work.
+- The rerun rule makes "pairs run twice" a biased sample of failures, so the pre-registered flake rate overstates
+  flakiness; the 4.6% floor and the 80% rerun figure bracket it.
+- The estimate pairs were picked by the HQ session after the fact; quotes that stood out may be over-represented.
 
 ## Deviations
-None yet.
+1. **Bookkeeping files.** Finding 9's code takes a list of bookkeeping files to leave out of the rework signal; the
+   studio's list doesn't fit the jam repo. The jam's own were used: the ledger, the dev log, the morning reports, the
+   questions and answers files, and the credits, declarations and sources lists. The list was set before Q1 was first
+   run; the result without it is reported above.
+2. **Who quoted.** The pre-registration split quotes into an agent's and the operator's; all were agents'. They are
+   split by session instead: the HQ session (with its reviewers and subagents), the jam's lead session, and both.
+3. **Converting quotes.** A range counts as its midpoint, "+" parts add up, a bound ("at most 56 min") counts as its
+   value, and notes in brackets are ignored. One pair was left out: its actual is a clock time. The conversion matches
+   the file's own ratio column within 0.05 on all 44 rows where that column is a plain number.
+4. **Bot reruns.** The failure-rerun counts and the all-pairs floor in Q3 were added after the pre-registration, to
+   explain why its flake rate is high.
+5. **Role names** were merged regardless of case ("Tooling" and "tooling").
+6. **Snapshot scrub.** Email addresses and absolute local paths in the snapshot are replaced by placeholders (1 address,
+   583 paths); the manifest hashes the scrubbed files.
+7. **Section numbers.** The pre-registration's "section 8" is the long note's (README); its "section 4" is the short
+   version's. In the long note the minutes result is section 6, and this finding is section 9.

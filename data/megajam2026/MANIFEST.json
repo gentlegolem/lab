@@ -1,0 +1,34 @@
+{
+ "built": "2026-11-16T09:55:55.132Z",
+ "commit": "484badbefeefae98636ebcef620c35e069f9904d",
+ "learningsCommit": "4afa21d71b2792264a2cea608490ab54b9f15fb1",
+ "files": {
+  "commits.tsv": "8eea64d73d9aaf48e84fc39cdefb0685390480e6091c023c43c3763f0f1c4eb2",
+  "files.tsv": "5f3a2f84d2aca758196135d58f54bcf3465d67d5e66438793fe852e1958f1677",
+  "ledger.jsonl": "94ccd18b9f57d86ac5fa99a308fc38f501b515d51648351146099514b115b929",
+  "estimates.tsv": "8d97cd9dc340612faa2bdbe8e500529ed7922bd51f6891f7775a477c0da79daf",
+  "playtests.tsv": "d3fd07be87aa2f22d69116005750b5933724b610b3a8d743c6a8d30a68aeb691",
+  "UE5_LEARNINGS.md": "5b97aec9ff8fb1ee8a637e6e56a9824038e6e31e86a8f49e1cd3263f704046b0"
+ },
+ "counts": {
+  "commits": 1820,
+  "fileRows": 8075,
+  "ledgerRows": 253,
+  "estimateRows": 89
+ },
+ "inputs": {
+  "estimates": {
+   "sha256": "a7c8b860201c5065f23da2a016f3004c76656d9f1ad56d60281e20db767f4798",
+   "bytes": 9963
+  },
+  "playtestRuns": {
+   "folders": 581,
+   "reports": 572,
+   "sha256OfReports": "cba69f8e2f89e5bc1b1d2afb287c1a91e8e4c7d7293d922f62bd4acec60d3520"
+  }
+ },
+ "scrubbed": {
+  "emails": 1,
+  "paths": 583
+ }
+}

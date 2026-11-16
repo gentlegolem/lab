@@ -1,0 +1,492 @@
+{
+ "q1": {
+  "rows": 253,
+  "status": {
+   "landed": 247,
+   "cut": 4,
+   "in-progress": 2
+  },
+  "cutShare": 1.6,
+  "landed": 247,
+  "withCommits": 214,
+  "unresolvedShas": 0,
+  "d3": {
+   "closed": 50,
+   "noCode": 0,
+   "leftAlone": 12,
+   "small": 20,
+   "material": 18,
+   "reverted": 0,
+   "open": 164,
+   "byRole": {
+    "tooling": {
+     "closed": 7,
+     "leftAlone": 2,
+     "small": 4,
+     "material": 1
+    },
+    "lead": {
+     "closed": 3,
+     "leftAlone": 1,
+     "small": 2,
+     "material": 0
+    },
+    "proto": {
+     "closed": 20,
+     "leftAlone": 2,
+     "small": 8,
+     "material": 10
+    },
+    "qa": {
+     "closed": 9,
+     "leftAlone": 7,
+     "small": 0,
+     "material": 2
+    },
+    "art": {
+     "closed": 2,
+     "leftAlone": 0,
+     "small": 2,
+     "material": 0
+    },
+    "gameplay": {
+     "closed": 9,
+     "leftAlone": 0,
+     "small": 4,
+     "material": 5
+    }
+   },
+   "share": {
+    "leftAlone": 24,
+    "small": 40,
+    "material": 36
+   }
+  },
+  "d1": {
+   "closed": 145,
+   "noCode": 1,
+   "leftAlone": 35,
+   "small": 92,
+   "material": 18,
+   "reverted": 0,
+   "open": 68,
+   "byRole": {
+    "tooling": {
+     "closed": 7,
+     "leftAlone": 2,
+     "small": 4,
+     "material": 1
+    },
+    "lead": {
+     "closed": 3,
+     "leftAlone": 1,
+     "small": 2,
+     "material": 0
+    },
+    "proto": {
+     "closed": 20,
+     "leftAlone": 7,
+     "small": 5,
+     "material": 8
+    },
+    "qa": {
+     "closed": 13,
+     "leftAlone": 11,
+     "small": 1,
+     "material": 1
+    },
+    "art": {
+     "closed": 12,
+     "leftAlone": 6,
+     "small": 6,
+     "material": 0
+    },
+    "gameplay": {
+     "closed": 47,
+     "leftAlone": 3,
+     "small": 36,
+     "material": 8
+    },
+    "level": {
+     "closed": 3,
+     "leftAlone": 1,
+     "small": 2,
+     "material": 0
+    },
+    "arcade": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "btofix": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "crew": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "other": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "artca": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "arttut": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "flow": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "chars": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "d": {
+     "closed": 1,
+     "leftAlone": 1,
+     "small": 0,
+     "material": 0
+    },
+    "h": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "s": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "k": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "m": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "ch": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "p": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "dc": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "f": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "ce": {
+     "closed": 2,
+     "leftAlone": 0,
+     "small": 2,
+     "material": 0
+    },
+    "gc": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "pz": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "am": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "mu": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "at": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "cs": {
+     "closed": 2,
+     "leftAlone": 0,
+     "small": 2,
+     "material": 0
+    },
+    "ic": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "cl": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "ui": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "tu": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "vid": {
+     "closed": 2,
+     "leftAlone": 1,
+     "small": 1,
+     "material": 0
+    },
+    "ap": {
+     "closed": 1,
+     "leftAlone": 1,
+     "small": 0,
+     "material": 0
+    },
+    "cut": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "as": {
+     "closed": 1,
+     "leftAlone": 1,
+     "small": 0,
+     "material": 0
+    },
+    "fix": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "jack": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "look": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "fx": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    },
+    "panels": {
+     "closed": 1,
+     "leftAlone": 0,
+     "small": 1,
+     "material": 0
+    }
+   },
+   "share": {
+    "leftAlone": 24.1,
+    "small": 63.4,
+    "material": 12.4
+   }
+  },
+  "rule": {
+   "window": "d3",
+   "lowConfidence": false,
+   "leftAloneShare": 24,
+   "verdict": "agrees"
+  }
+ },
+ "q2": {
+  "rows": 56,
+  "converted": 55,
+  "excluded": [
+   "8: ~60 min -> merge 21:14, on main by 22:10 at the latest"
+  ],
+  "all": {
+   "n": 55,
+   "medianRatio": 0.33555555555555555,
+   "medianErrRaw": 0.6644444444444444,
+   "medianErrX034": 0.5183823529411766,
+   "x034Closer": true,
+   "under1": 51,
+   "quotesHighBy": 2.980132450331126
+  },
+  "unflagged": {
+   "n": 50,
+   "medianRatio": 0.31094017094017096,
+   "medianErrRaw": 0.6890598290598291,
+   "medianErrX034": 0.4742647058823529,
+   "x034Closer": true,
+   "under1": 49,
+   "quotesHighBy": 3.216052776250687
+  },
+  "byWho": {
+   "HQ": {
+    "n": 14,
+    "medianRatio": 0.18102380952380953,
+    "medianErrRaw": 0.8189761904761905,
+    "medianErrX034": 0.633578431372549,
+    "x034Closer": true,
+    "under1": 14,
+    "quotesHighBy": 5.5241352097856105
+   },
+   "jam lead": {
+    "n": 39,
+    "medianRatio": 0.374,
+    "medianErrRaw": 0.6333333333333333,
+    "medianErrX034": 0.43933823529411775,
+    "x034Closer": true,
+    "under1": 35,
+    "quotesHighBy": 2.6737967914438503
+   },
+   "mixed": {
+    "n": 2,
+    "medianRatio": 0.3133333333333333,
+    "medianErrRaw": 0.6866666666666668,
+    "medianErrX034": 0.6274509803921567,
+    "x034Closer": true,
+    "under1": 2,
+    "quotesHighBy": 3.191489361702128
+   }
+  },
+  "rule": {
+   "direction": "agrees",
+   "correction": "x0.34 closer"
+  },
+  "fileRatioCheck": 0,
+  "eta": {
+   "rows": 26,
+   "pairs": 28,
+   "medianLatenessMin": -73.5,
+   "late": 1,
+   "medianFileRatio": 0.345
+  },
+  "usage": [
+   {
+    "what": "Night 2 usage",
+    "estimate": "1.45 pts (2.45 whole night)",
+    "actual": "23-25% by ~17:30, items still running",
+    "ratio": "≥1.4 LOW (?)"
+   },
+   {
+    "what": "Night 2b usage",
+    "estimate": "40-45% by 05:45",
+    "actual": "40% at 06:48",
+    "ratio": "about right"
+   },
+   {
+    "what": "044 lane usage",
+    "estimate": "4.3-5.3 pts",
+    "actual": "87-88% while all 4 ran",
+    "ratio": "~0.2 HIGH (?)"
+   },
+   {
+    "what": "Rodin credits per prop",
+    "estimate": "~0.5",
+    "actual": "0.5",
+    "ratio": "1.0"
+   },
+   {
+    "what": "Rodin character generations",
+    "estimate": "~0.5 each",
+    "actual": "1.0 each",
+    "ratio": "2.0 LOW (?)"
+   },
+   {
+    "what": "fal panel 4 regeneration",
+    "estimate": "$0.30-0.60",
+    "actual": "$0.08",
+    "ratio": "~0.18"
+   },
+   {
+    "what": "fal Vera conversions",
+    "estimate": "~$0.03",
+    "actual": "$0.03",
+    "ratio": "1.0"
+   }
+  ]
+ },
+ "q3": {
+  "reports": 572,
+  "mock": 1,
+  "real": 571,
+  "passShare": 89.5,
+  "pairsRunTwice": 37,
+  "flaky": 24,
+  "flakeRate": 64.9,
+  "scenarios": 147,
+  "consecutiveCommitSteps": 374,
+  "redAfterGreen": 17,
+  "redAfterGreenShare": 4.5,
+  "rule": {
+   "verdict": "noisy"
+  },
+  "allPairs": 521,
+  "failures": {
+   "failed": 60,
+   "rerunOnSameCommit": 30,
+   "rerunPassed": 24,
+   "rerunPassedShare": 80
+  }
+ },
+ "context": {
+  "commitsAtSubmitted": 1820,
+  "merges": 333,
+  "inJamWindow": 1783,
+  "first": "2026-11-11T22:40:44.000Z",
+  "submitted": "2026-11-15T22:35:41.000Z"
+ }
+}

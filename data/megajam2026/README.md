@@ -13,6 +13,9 @@ Epic's MegaJam (Nov 12–15, 2026). Pinned to the jam repo's submitted build, `4
 | `UE5_LEARNINGS.md` | the jam's own end-of-jam lessons (from `4afa21d7`, which adds only this file) |
 | `MANIFEST.json` | source commits, SHA-256 of every file, row counts, what the scrub replaced |
 | `results.json` | the analysis output |
+| `playtests-archive.tsv` | finding 16a: one row per bot report from the jam's worktrees, same columns plus the tree and `dup_of_main` |
+| `MANIFEST-archive.json` | finding 16a: hash of the archive's file list and of the table, counts, the check that main's reports match |
+| `results-addendum.json` | finding 16a's analysis output |
 
 No game code, assets, sourced content, author names or emails, commit bodies or receipts. Email addresses and absolute
 local paths are replaced by `<email>`, `<repo>` or `<local path>`. The playtest runs are git-ignored in the jam repo, so
@@ -27,3 +30,13 @@ node analyze.js
 
 `analyze.js` uses finding 9's own rework code from `agent-study/package/`. Set `F16_NO_NOISE=1` to count the
 bookkeeping files too (the sensitivity check in the finding).
+
+Finding 16a adds the worktree runs from an archive of the jam's `playtest-runs` (one folder per worktree, plus `main`
+and a `MANIFEST.csv`). Only the report fields are read; screenshots and logs are not copied:
+
+```
+node build_archive.js --archive <playtest-runs>
+node analyze_addendum.js
+```
+
+`analyze_addendum.js` stops unless it first reproduces finding 16's bot numbers on main alone.

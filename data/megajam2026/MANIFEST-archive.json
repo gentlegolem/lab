@@ -1,0 +1,86 @@
+{
+ "built": "2026-11-16T15:44:54.269Z",
+ "archiveManifest": {
+  "sha256": "48d960a253fdbb3d8c89e5f2ee9a9c1c034bca2495ea0abb7bbf318d7713efdf",
+  "bytes": 1181432
+ },
+ "trees": {
+  "art1": {
+   "folders": 23,
+   "reports": 23,
+   "dupOfMain": 0
+  },
+  "draftlap": {
+   "folders": 7,
+   "reports": 7,
+   "dupOfMain": 0
+  },
+  "holdbanner": {
+   "folders": 10,
+   "reports": 10,
+   "dupOfMain": 0
+  },
+  "p5chase": {
+   "folders": 41,
+   "reports": 41,
+   "dupOfMain": 0
+  },
+  "p5crew": {
+   "folders": 5,
+   "reports": 5,
+   "dupOfMain": 0
+  },
+  "p5menu": {
+   "folders": 30,
+   "reports": 29,
+   "dupOfMain": 0
+  },
+  "p5portraits": {
+   "folders": 35,
+   "reports": 35,
+   "dupOfMain": 0
+  },
+  "p5sound": {
+   "folders": 65,
+   "reports": 65,
+   "dupOfMain": 0
+  },
+  "physics": {
+   "folders": 47,
+   "reports": 47,
+   "dupOfMain": 0
+  },
+  "smallchase": {
+   "folders": 1,
+   "reports": 1,
+   "dupOfMain": 0
+  },
+  "textfix": {
+   "folders": 1,
+   "reports": 1,
+   "dupOfMain": 0
+  },
+  "wyctune": {
+   "folders": 8,
+   "reports": 8,
+   "dupOfMain": 0
+  }
+ },
+ "counts": {
+  "trees": 12,
+  "rows": 272
+ },
+ "mainCheck": {
+  "reports": 572,
+  "sha256OfReports": "cba69f8e2f89e5bc1b1d2afb287c1a91e8e4c7d7293d922f62bd4acec60d3520",
+  "snapshot": "cba69f8e2f89e5bc1b1d2afb287c1a91e8e4c7d7293d922f62bd4acec60d3520",
+  "same": true
+ },
+ "output": {
+  "playtests-archive.tsv": "90e34b5026ff414d18042aa0960d45b05b833905cdd49c8720256ae19ae9fed3"
+ },
+ "scrubbed": {
+  "emails": 0,
+  "paths": 267
+ }
+}

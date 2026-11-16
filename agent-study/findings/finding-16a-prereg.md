@@ -57,3 +57,41 @@ reproduce finding 16's question 3 on main alone; if either fails, the addendum s
   green across trees mixes branches, which is why the within-tree version is also reported.
 - Worktrees deleted before the archive was made, or runs cleaned out of one, are missing.
 - The last ~3.6 hours before submission have no bot report in either source.
+
+## Result (2026-11-16)
+Both checks passed: the archive's 572 main reports hash to the snapshot's value, and the analysis reproduces finding
+16's question 3 on main alone. The rule ran as written. Numbers from `data/megajam2026/results-addendum.json`
+(`node build_archive.js --archive <playtest-runs>`, then `node analyze_addendum.js`).
+
+**The added data.** 272 worktree reports from 12 trees; 5 ran against a mock and were dropped, none was unreadable and
+none duplicated a main report, leaving 267. None of their (scenario, commit) pairs is also in main: the worktrees tested
+commits main's bot never ran. The worktrees ran 74 scenarios, 22 of them never run in main (169 in all).
+
+**Q3a. Still noisy as a single run: same verdict as finding 16.**
+
+| Data | Reports | Passed | Pairs run twice | Flaky (the rule) | Flaky, floor over all pairs | Rerun failures that passed | Pass then fail, in time order | Pass then fail, within a tree |
+|---|---|---|---|---|---|---|---|---|
+| Main (finding 16) | 571 | 89.5% | 37 | 24 (64.9%) | 24 of 521 (4.6%) | 24 of 30 (80%) | 17 of 374 (4.5%) | 17 of 374 (4.5%) |
+| Main + worktrees | 838 | 86.5% | 74 | 43 (58.1%) | 43 of 728 (5.9%) | 43 of 61 (70.5%) | 37 of 561 (6.6%) | 22 of 472 (4.7%) |
+| Worktrees alone | 267 | 80.1% | 37 | 19 (51.4%) | 19 of 207 (9.2%) | 19 of 31 (61.3%) | 14 of 134 (10.4%) | 5 of 98 (5.1%) |
+| After main's last report | 66 | 77.3% | 6 | 6 (100%) | 6 of 55 (10.9%) | 6 of 9 (66.7%) | 1 of 23 (4.3%) | 0 of 18 |
+
+- The flake rate on main plus worktrees is 58.1%, far over the 10% bar, so the verdict stays "noisy". As in finding 16,
+  the rerun habit inflates it: a pair is mostly run twice because it failed first.
+- Worktree code failed more often (80.1% passed, against 89.5% on main), as code still in progress would, and its
+  failures passed on a rerun less often (61% against 80%). Combined, 7 in 10 rerun failures passed.
+- "A green run held" survives within each tree (4.7% pass-then-fail, as on main). In time order across trees it rises to
+  6.6%, since that sequence jumps between branches, as the pre-registration warned.
+
+**Coverage.** Main's reports fall in 32 of the jam's 97 hours, the last on Sat 14 Nov, 03:47 ET. With the worktrees,
+40 of 97, the last on Sun 15 Nov, 13:56 ET. After main's last report there are 66 real reports, in 6 hours. (The
+pre-registration counted 70 by run-folder date; 4 of those ran against a mock.) LB29's gap is
+narrowed, not closed: the last day and a half of the jam has a thin bot record, and the last 3.6 hours have none.
+
+**Reading.** Adding 267 reports to main's 571, run on the agents' branches, doesn't change finding 16's answer. One
+bot run is weak evidence of a failure and fair evidence of a pass, and the rerun rule is what made it usable. The worktree
+numbers are a little noisier, which fits code in progress, not a different bot.
+
+## Deviations
+None. One clarification: the pre-registration's "70 reports after main's last" was a count of run folders by name; the
+measure keeps real-game reports only, which drops 4 mock runs and gives 66.

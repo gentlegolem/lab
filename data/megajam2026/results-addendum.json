@@ -1,0 +1,157 @@
+{
+ "archiveFile": "playtests-archive.tsv",
+ "archiveRows": 272,
+ "dropped": {
+  "unreadable": 0,
+  "mock": 5,
+  "dupOfMain": 0
+ },
+ "main": {
+  "reports": 571,
+  "passShare": 89.5,
+  "pairsRunTwice": 37,
+  "flaky": 24,
+  "flakeRate": 64.9,
+  "allPairs": 521,
+  "flakyFloor": 4.6,
+  "failures": {
+   "failed": 60,
+   "rerunOnSameCommit": 30,
+   "rerunPassed": 24,
+   "rerunPassedShare": 80
+  },
+  "scenarios": 147,
+  "redAfterGreen": {
+   "steps": 374,
+   "redAfterGreen": 17,
+   "share": 4.5
+  },
+  "redAfterGreenWithinTree": {
+   "steps": 374,
+   "redAfterGreen": 17,
+   "share": 4.5
+  },
+  "coverage": {
+   "first": "2026-11-12T02:49:16.000Z",
+   "last": "2026-11-14T08:47:35.000Z",
+   "jamHoursWithAReport": 32,
+   "jamHours": 97
+  }
+ },
+ "mainMatchesF16": true,
+ "mainMismatch": [],
+ "mainLast": "2026-11-14T08:47:35.000Z",
+ "combined": {
+  "reports": 838,
+  "passShare": 86.5,
+  "pairsRunTwice": 74,
+  "flaky": 43,
+  "flakeRate": 58.1,
+  "allPairs": 728,
+  "flakyFloor": 5.9,
+  "failures": {
+   "failed": 113,
+   "rerunOnSameCommit": 61,
+   "rerunPassed": 43,
+   "rerunPassedShare": 70.5
+  },
+  "scenarios": 169,
+  "redAfterGreen": {
+   "steps": 561,
+   "redAfterGreen": 37,
+   "share": 6.6
+  },
+  "redAfterGreenWithinTree": {
+   "steps": 472,
+   "redAfterGreen": 22,
+   "share": 4.7
+  },
+  "coverage": {
+   "first": "2026-11-12T02:49:16.000Z",
+   "last": "2026-11-15T18:56:52.000Z",
+   "jamHoursWithAReport": 40,
+   "jamHours": 97
+  }
+ },
+ "worktrees": {
+  "reports": 267,
+  "passShare": 80.1,
+  "pairsRunTwice": 37,
+  "flaky": 19,
+  "flakeRate": 51.4,
+  "allPairs": 207,
+  "flakyFloor": 9.2,
+  "failures": {
+   "failed": 53,
+   "rerunOnSameCommit": 31,
+   "rerunPassed": 19,
+   "rerunPassedShare": 61.3
+  },
+  "scenarios": 74,
+  "redAfterGreen": {
+   "steps": 134,
+   "redAfterGreen": 14,
+   "share": 10.4
+  },
+  "redAfterGreenWithinTree": {
+   "steps": 98,
+   "redAfterGreen": 5,
+   "share": 5.1
+  },
+  "coverage": {
+   "first": "2026-11-13T00:23:06.000Z",
+   "last": "2026-11-15T18:56:52.000Z",
+   "jamHoursWithAReport": 19,
+   "jamHours": 97
+  }
+ },
+ "afterMainLast": {
+  "reports": 66,
+  "passShare": 77.3,
+  "pairsRunTwice": 6,
+  "flaky": 6,
+  "flakeRate": 100,
+  "allPairs": 55,
+  "flakyFloor": 10.9,
+  "failures": {
+   "failed": 15,
+   "rerunOnSameCommit": 9,
+   "rerunPassed": 6,
+   "rerunPassedShare": 66.7
+  },
+  "scenarios": 32,
+  "redAfterGreen": {
+   "steps": 23,
+   "redAfterGreen": 1,
+   "share": 4.3
+  },
+  "redAfterGreenWithinTree": {
+   "steps": 18,
+   "redAfterGreen": 0,
+   "share": 0
+  },
+  "coverage": {
+   "first": "2026-11-14T10:57:06.000Z",
+   "last": "2026-11-15T18:56:52.000Z",
+   "jamHoursWithAReport": 6,
+   "jamHours": 97
+  }
+ },
+ "byTree": {
+  "art1": 23,
+  "draftlap": 7,
+  "holdbanner": 8,
+  "p5chase": 40,
+  "p5crew": 5,
+  "p5menu": 29,
+  "p5portraits": 34,
+  "p5sound": 65,
+  "physics": 47,
+  "textfix": 1,
+  "wyctune": 8
+ },
+ "rule": {
+  "verdict": "noisy",
+  "f16Verdict": "noisy"
+ }
+}

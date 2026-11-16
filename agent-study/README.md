@@ -387,6 +387,10 @@ observational and after the fact ([finding 16](findings/finding-16-prereg.md); d
   mostly failures. Of the 30 failures rerun on the same commit, 24 then passed (80%). Across all 521 pairs, at least 4.6%
   were flaky. A single red run was weak evidence; a green one held, since a pass was followed by a fail in 4.5% of steps
   across commits.
+- **Addendum, the worktree runs ([finding 16a](findings/finding-16a-prereg.md)):** the bot data above is the main run
+  folder only, which ends on Sat 14 Nov at 03:47 ET. Adding the 267 real reports the agents ran in their worktrees
+  (pre-registered first) keeps the verdict: 58% of the 74 pairs run twice were flaky, at least 5.9% of all 728 pairs, and
+  43 of 61 rerun failures passed (70%). Reports now reach Sun 13:56 ET, but only 40 of the jam's 97 hours have one.
 - **Limits:** one jam, read after the fact. The 3-day windows that closed cover the first day and a half, mostly
   prototype work. The quote pairs were picked afterwards by the operator's HQ session, and every quote came from an
   agent. The judges' result isn't due until Jan 29, 2027.

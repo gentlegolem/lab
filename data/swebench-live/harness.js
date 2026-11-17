@@ -265,12 +265,24 @@ function goldSummary() {
 	for (const t of tasks()) console.log(t.instance_id, Object.keys(out).map((r) => `${r}=${out[r][t.instance_id]}`).join(' '), keep.includes(t.instance_id) ? 'COUNTS' : 'REPLACE');
 }
 
+// ---------- clean (a check, not the main result): the same patches without new build products ----------
+// Drops a new file when it is named *.log, *.trs or .dirstamp, or is a libtool wrapper script. Fixed before any score.
+function clean() {
+	const isBuild = (chunk) => /\nnew file mode /.test(chunk) && (/^a\/(\S*\.(log|trs)|\S*\.dirstamp) b\//.test(chunk) || /temporary wrapper script/.test(chunk));
+	for (const c of ['A', 'B']) {
+		const p = JSON.parse(fs.readFileSync(path.join(KIT, `predictions-${c}.json`), 'utf8')); let dropped = 0;
+		for (const v of Object.values(p)) { const parts = v.model_patch.split(/^(?=diff --git )/m); const keep = parts.filter((x) => !isBuild(x)); dropped += parts.length - keep.length; v.model_patch = keep.join(''); }
+		fs.writeFileSync(path.join(KIT, `predictions-${c}-clean.json`), JSON.stringify(p, null, 1)); console.log(c, 'build files dropped:', dropped);
+	}
+}
+
 // ---------- score: the pre-registered measures and rules (written after the gold check, before any build) ----------
 // Needs the evaluator's reports in kit/logs/eval-A and kit/logs/eval-B, kit/measured.json, kit/estimate-A.txt, B/PLAN.md,
 // A/RESULT.md and B/RESULT-G*.md, and kit/audit.json if present. Writes kit/score.json.
 function score() {
 	const ids = tasks().map((t) => t.instance_id); const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-	const ev = (c) => JSON.parse(fs.readFileSync(path.join(KIT, 'logs', `eval-${c}`, 'results.json'), 'utf8'));
+	const suf = process.env.SWL_EVAL_SUFFIX || ''; // '-clean' scores the check without build products
+	const ev = (c) => JSON.parse(fs.readFileSync(path.join(KIT, 'logs', `eval-${c}${suf}`, 'results.json'), 'utf8'));
 	const claims = (c) => { const dir = path.join(RUNS, c); const files = c === 'A' ? ['RESULT.md'] : fs.readdirSync(dir).filter((f) => /^RESULT-G\d+\.md$/.test(f));
 		const txt = files.map((f) => path.join(dir, f)).filter((f) => fs.existsSync(f)).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
 		return Object.fromEntries(ids.map((id) => { const m = txt.match(new RegExp(`${esc(id)}\\s*:\\s*(NOT DONE|DONE)`)); return [id, m ? m[1] : 'no line']; })); };
@@ -308,7 +320,7 @@ function score() {
 		evaluatorErrors: { A: R.A.errors, B: R.B.errors }, emptyPatches: { A: R.A.empty, B: R.B.empty } };
 	const perTask = ids.map((id) => ({ id, A: R.A.has(id), B: R.B.has(id), claimA: C.A[id], claimB: C.B[id] }));
 	const out = { resolved, main, perTask, done, minutes, split, also };
-	fs.writeFileSync(path.join(KIT, 'score.json'), JSON.stringify(out, null, 1));
+	fs.writeFileSync(path.join(KIT, `score${suf}.json`), JSON.stringify(out, null, 1));
 	const pct = (x) => (x === null || x === undefined ? 'n/a' : `${Math.round(x * 100)}%`);
 	console.log(`resolved: A ${resolved.A}/10, B ${resolved.B}/10 -> ${main}`);
 	for (const t of perTask) console.log(`  ${t.id}: A ${t.A ? 'resolved' : '-'} (${t.claimA}), B ${t.B ? 'resolved' : '-'} (${t.claimB})`);
@@ -320,7 +332,7 @@ function score() {
 
 const [cmd, ...rest] = process.argv.slice(2);
 const opt = (k) => { const i = rest.indexOf(k); return i >= 0 ? Number(rest[i + 1]) : NaN; };
-const cmds = { copy, up, down, estimate, architect, collect, measure, audit, 'seal-check': sealCheck, 'gold-summary': goldSummary, score, plan: () => console.log(JSON.stringify(parsePlan(), null, 1)),
+const cmds = { copy, up, down, estimate, architect, collect, measure, audit, 'seal-check': sealCheck, 'gold-summary': goldSummary, score, clean, plan: () => console.log(JSON.stringify(parsePlan(), null, 1)),
 	build: () => { const a = opt('--cap-a'), b = opt('--cap-b'); if (!(a > 0 && b > 0)) throw new Error('build needs --cap-a and --cap-b (reported tokens)'); return build(a, b); } };
 if (!cmds[cmd]) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 14).join('\n')); process.exit(1); }
 Promise.resolve(cmds[cmd]()).catch((e) => { console.error(e.message); process.exit(1); });

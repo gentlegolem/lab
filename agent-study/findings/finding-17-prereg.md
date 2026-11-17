@@ -190,3 +190,10 @@ larger quote, 2,100k, so 6,300k reported for each build.
    from both shells. All 20 workspaces and containers were reset from the images, and both builds restarted with the
    same briefs, plan, estimates and caps. The stopped start used 83k reported tokens for A and 258k for B (0.29M and
    0.75M plan-equivalent); its records are kept apart (`kit/attempt1/`) and counted in neither build.
+
+## Check added after the builds, before any score
+9. **Build products in the patches.** The pre-registered collection (`git add -A`, then the diff) also picked up files
+   the agents' in-tree builds and test runs left behind (test logs, `.dirstamp` files, libtool wrapper scripts), in 6
+   of A's patches and 4 of B's. The main result scores the patches as pre-registered. A labelled check, fixed before
+   any score (`node harness.js clean`), scores the same patches without new files named `*.log`, `*.trs` or
+   `.dirstamp` and without new libtool wrapper scripts.

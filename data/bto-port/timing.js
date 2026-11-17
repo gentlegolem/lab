@@ -2,8 +2,9 @@
 // Finding 18 timing tool (agent-study/findings/finding-18-prereg.md). Node 18+, no dependencies.
 // Reads Claude Code session transcripts and the port's study/PHASES.log, puts each message in the phases open at its
 // time, and prints per phase: wall-clock, active agent time, reported and plan-equivalent tokens, owner messages, and
-// the owner step log's minutes. The rules are in README.md next to this file.
-//   node timing.js --phases <PHASES.log> [--owner-steps <OWNER_STEPS.log>] [--projects <dir>]... [--match <text>]...
+// the owner step log's minutes; with --ledger, the task ledger's re-tests (deviation 1). Rules: README.md here.
+//   node timing.js --phases <PHASES.log> [--owner-steps <OWNER_STEPS.log>] [--ledger <LEDGER.jsonl>]
+//                  [--projects <dir>]... [--match <text>]...
 //                  [--all] [--session <id>]... [--exclude-session <id>]... [--until <ISO time>] [--repo <port repo>]
 //                  [--json <out.json>]
 'use strict';
@@ -13,6 +14,7 @@ const cp = require('child_process');
 const GAP_MS = 5 * 60 * 1000;      // gaps of 5 minutes or less between consecutive messages count as active
 const CACHE_READ_WEIGHT = 0.1;     // plan-equivalent = reported + 10% of cache reads
 const TAG_TOLERANCE_MS = 5 * 60 * 1000;
+const COPIES = 'D:/LabData/f18/transcripts';   // where the port's transcripts are copied after each work block
 
 const norm = s => String(s).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const slashes = s => String(s).toLowerCase().replace(/\\+/g, '/');
@@ -124,14 +126,20 @@ async function readTranscripts(dirs, needles) {
 	const sessions = new Map();  // session -> { files, matched: Set of reasons, first, last }
 	const usage = new Map();     // "<message id>|<request id>" -> one record per API response
 	const owner = new Map();     // uuid -> { t, session }
-	const fileStats = { files: 0, lines: 0, badLines: 0 };
+	const descriptions = new Map(); // "<session>|<agent id>" -> the Agent tool's description (from agent-<id>.meta.json)
+	const seen = new Set();      // entry uuids already read: copies of a transcript count once
+	const fileStats = { files: 0, lines: 0, badLines: 0, repeated: 0 };
 	for (const dir of dirs) for (const file of listTranscripts(dir)) {
 		fileStats.files++;
+		let description = null;
+		const am = path.basename(file).match(/^agent-(.+)\.jsonl$/);
+		if (am) try { description = JSON.parse(fs.readFileSync(file.replace(/\.jsonl$/, '.meta.json'), 'utf8')).description || null; } catch { }
 		const rl = readline.createInterface({ input: fs.createReadStream(file), crlfDelay: Infinity });
 		for await (const line of rl) {
 			if (!line) continue;
 			fileStats.lines++;
 			let o; try { o = JSON.parse(line); } catch { fileStats.badLines++; continue; }
+			if (o.uuid) { if (seen.has(o.uuid)) { fileStats.repeated++; continue; } seen.add(o.uuid); }
 			const session = o.sessionId || path.basename(file, '.jsonl');
 			if (!sessions.has(session)) sessions.set(session, { files: new Set(), matched: new Set(), first: Infinity, last: -Infinity });
 			const S = sessions.get(session); S.files.add(file);
@@ -143,11 +151,12 @@ async function readTranscripts(dirs, needles) {
 			if ((o.type !== 'user' && o.type !== 'assistant') || isNaN(t)) continue;
 			S.first = Math.min(S.first, t); S.last = Math.max(S.last, t);
 			const sk = session + '|' + (o.isSidechain ? (o.agentId || 'sidechain') : 'lead');
-			if (!streams.has(sk)) streams.set(sk, { session, lead: !o.isSidechain, times: [] });
+			if (!streams.has(sk)) streams.set(sk, { session, lead: !o.isSidechain, agentId: o.isSidechain ? o.agentId || null : null, times: [] });
 			streams.get(sk).times.push(t);
+			if (description && o.isSidechain && o.agentId) descriptions.set(sk, description);
 			if (o.type === 'assistant' && o.message?.usage && o.message.model !== '<synthetic>') {
 				const u = o.message.usage, key = (o.message.id || '') + '|' + (o.requestId || '');
-				const r = { t, session, model: o.message.model || 'unknown', input: u.input_tokens || 0, output: u.output_tokens || 0,
+				const r = { t, session, stream: sk, model: o.message.model || 'unknown', input: u.input_tokens || 0, output: u.output_tokens || 0,
 					cacheWrite: u.cache_creation_input_tokens || 0, cacheRead: u.cache_read_input_tokens || 0 };
 				const prev = usage.get(key);
 				if (!prev) usage.set(key, r);
@@ -158,7 +167,137 @@ async function readTranscripts(dirs, needles) {
 		}
 	}
 	for (const s of streams.values()) s.times.sort((a, b) => a - b);
+	for (const [sk, d] of descriptions) if (streams.has(sk)) streams.get(sk).description = d;
 	return { streams, sessions, usage: [...usage.values()], owner: [...owner.values()], fileStats };
+}
+
+// ---- LEDGER.jsonl (the port's task ledger, deviation 1) -----------------------------------------------------------
+// Append-only events, one JSON object per line, folded by task id: the port's tools/ledger.js (v2) format, and its
+// first version. Event name in `ev` (or `event`), time in `at` (or `t`).
+// - open: phase (null for setup work), title, thread, session, model, estimate { agent_min, ktokens }, jam_refs.
+// - claim: the agent says done (by, text, commits).
+// - check: an independent check of the claim before it: result pass / fail / not-checked, by, kind, ref, commit.
+//   fail reopens the task (a retry). not-checked parks it. A fail on a task already done is a later fail, not a claim.
+// - park (closed unfinished), reopen (a parked task resumes), owner (the owner was needed).
+// - sweep-start, then sweep (start, end and counts).
+// - First version only: done (a claim with its check) and a check with no claim before it, each counted as a claim.
+function parseLedger(text) {
+	const tasks = new Map(), claims = [], sweeps = [], problems = [];
+	const pending = new Map();   // task id -> the claim waiting for its check
+	const resolve = (id, result, t) => { const c = pending.get(id); if (c) { c.result = result; c.checkedAt = t; pending.delete(id); return true; } return false; };
+	const resultOf = e => { const r = (e.check && e.check.result) || e.result; return r ? String(r).replace(/-/g, ' ') : null; };
+	text.split(/\r?\n/).forEach((raw, i) => {
+		const line = raw.trim();
+		if (!line) return;
+		let e; try { e = JSON.parse(line); } catch { problems.push(`LEDGER.jsonl line ${i + 1}: not JSON`); return; }
+		const ev = e.ev || e.event, t = Date.parse(e.at || e.t);
+		if (!ev || isNaN(t)) { problems.push(`LEDGER.jsonl line ${i + 1}: no event or time`); return; }
+		if (ev === 'sweep-start') return;
+		if (ev === 'sweep') { const s = Date.parse(e.start); sweeps.push({ t, start: isNaN(s) ? null : s, counts: e.counts || null }); return; }
+		if (ev === 'open') {
+			if (tasks.has(e.id)) { problems.push(`task ${e.id}: opened twice (line ${i + 1})`); return; }
+			tasks.set(e.id, { id: e.id, phase: e.phase || null, title: e.title || '', thread: e.thread || null, model: e.model || null,
+				start: t, end: null, estimate: e.estimate || null, session: e.session || null, agent: e.agent || null, state: 'open',
+				retries: 0, laterFails: 0, selfReported: {}, ownerNeeded: false, commits: [], jamRefs: [...(e.jam_refs || []), ...(e.jam_ref ? [e.jam_ref] : [])] });
+			return;
+		}
+		const T = tasks.get(e.id);
+		if (!T) { problems.push(`task ${e.id}: ${ev} before open (line ${i + 1})`); return; }
+		if (e.actual) Object.assign(T.selfReported, e.actual);
+		if (e.owner_needed) T.ownerNeeded = true;
+		if (Array.isArray(e.commits)) T.commits.push(...e.commits.filter(c => !T.commits.includes(c)));
+		if (Array.isArray(e.jam_refs)) T.jamRefs.push(...e.jam_refs);
+		if (e.jam_ref) T.jamRefs.push(e.jam_ref);
+		if (ev === 'claim') {
+			if (pending.has(e.id)) resolve(e.id, 'not checked', t);
+			const c = { task: e.id, t, by: e.by || null, result: null }; claims.push(c); pending.set(e.id, c);
+		} else if (ev === 'done') {
+			const r = resultOf(e) || 'pass';
+			if (!resolve(e.id, r, t)) claims.push({ task: e.id, t, by: null, result: r, checkedAt: t });
+			Object.assign(T, { state: 'done', end: t });
+		} else if (ev === 'check') {
+			const r = resultOf(e) || 'not checked';
+			if (pending.has(e.id)) resolve(e.id, r, t);
+			else if (T.state === 'done' && r === 'fail') T.laterFails++;
+			else claims.push({ task: e.id, t, by: null, result: r, checkedAt: t });
+			if (r === 'fail') { T.state = 'open'; T.end = null; T.retries++; }
+			else if (r === 'not checked') Object.assign(T, { state: 'parked', end: t });
+			else if (r === 'pass') Object.assign(T, { state: 'done', end: t });
+		} else if (ev === 'park') {
+			resolve(e.id, 'not checked', t);
+			Object.assign(T, { state: 'parked', end: t });
+		} else if (ev === 'reopen') Object.assign(T, { state: 'open', end: null });
+		else if (ev === 'owner') T.ownerNeeded = true;
+		else problems.push(`task ${e.id}: unknown event ${ev} (line ${i + 1})`);
+	});
+	for (const c of pending.values()) c.result = 'no check yet';
+	return { tasks: [...tasks.values()], claims, sweeps, problems };
+}
+
+const median = xs => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const QUOTE_FACTOR = 0.34;  // method 2 (findings 10, 14, 17)
+
+// A task's threads: subagents whose Agent description starts with the task id, the agent named in the ledger, or
+// (failing those) the lead thread of the ledger's session. Its time is measured from open to close (or --until).
+function measureTasks(ledger, data, untilMs) {
+	const problems = [];
+	const startsWithId = (d, id) => d && d.trim().toLowerCase().startsWith(id.toLowerCase()) && !/[a-z0-9]/i.test(d.trim().charAt(id.length));
+	const out = ledger.tasks.map(T => {
+		const streams = [...data.streams.entries()].filter(([sk, s]) => startsWithId(s.description, T.id) || (T.agent && s.agentId === T.agent));
+		if (!streams.length && T.session && data.streams.has(T.session + '|lead')) streams.push([T.session + '|lead', data.streams.get(T.session + '|lead')]);
+		const win = [[T.start, T.end ?? untilMs]];
+		const keys = new Set(streams.map(([sk]) => sk));
+		const r = { ...T, linked: streams.length > 0, threads: streams.length, activeMs: 0, spanMs: 0, reported: 0 };
+		for (const [, s] of streams) {
+			r.activeMs += activeMs(s.times, win);
+			const inWin = s.times.filter(t => t >= win[0][0] && t <= win[0][1]);
+			if (inWin.length) r.spanMs += inWin[inWin.length - 1] - inWin[0];
+			if (!s.lead && s.times.length && s.times[0] < T.start) problems.push(`task ${T.id}: its subagent started before the estimate was written`);
+		}
+		for (const u of data.usage) if (keys.has(u.stream) && u.t >= win[0][0] && u.t <= win[0][1]) r.reported += u.input + u.output + u.cacheWrite;
+		const est = T.estimate && Number(T.estimate.agent_min);
+		if (r.linked && est > 0) {
+			const m = r.activeMs / 60000;
+			r.ratio = m / est; r.errorRaw = Math.abs(m / est - 1); r.errorFactor = Math.abs(m / (QUOTE_FACTOR * est) - 1);
+			r.ratioSpan = (r.spanMs / 60000) / est;
+		}
+		return r;
+	});
+	const unlinked = out.filter(r => !r.linked).length;
+	if (unlinked) problems.push(`${unlinked} task(s) with no transcript link (no subagent description starting with the id, no session or agent)`);
+	const noEst = out.filter(r => !(r.estimate && Number(r.estimate.agent_min) > 0)).length;
+	if (noEst) problems.push(`${noEst} task(s) with no estimate in agent-minutes`);
+	return { tasks: out, problems };
+}
+
+function summarizeTasks(tasks, claims, phaseInfo) {
+	const known = new Map(phaseInfo.phases.map(p => [p.key, p.name]));
+	const groups = new Map();
+	const isSetup = t => !t.phase || norm(t.phase) === 'setup';   // setup work is outside the re-tests (deviation 1)
+	for (const t of tasks) {
+		const name = isSetup(t) ? 'setup (no phase)' : (known.get(norm(t.phase)) || `${t.phase} (not a timed phase)`);
+		if (!groups.has(name)) groups.set(name, []);
+		groups.get(name).push(t);
+	}
+	const sum = (name, ts) => {
+		const ids = new Set(ts.map(t => t.id)), all = claims.filter(c => ids.has(c.task));
+		const cs = all.filter(c => c.result !== 'no check yet');   // a claim still waiting for its check isn't counted yet
+		const withRatio = ts.filter(t => t.ratio !== undefined);
+		const done = ts.filter(t => t.state === 'done');
+		// Per task, as tools/ledger.js counts it: the result of the first check of the task's first claim.
+		const firstOfTask = [...ids].map(id => cs.find(c => c.task === id)).filter(Boolean);
+		return { group: name, tasks: ts.length, done: done.length, parked: ts.filter(t => t.state === 'parked').length,
+			open: ts.filter(t => t.state === 'open').length, retries: ts.reduce((n, t) => n + t.retries, 0),
+			laterFails: ts.reduce((n, t) => n + t.laterFails, 0), ownerNeeded: ts.filter(t => t.ownerNeeded).length,
+			tasksChecked: firstOfTask.length, tasksFirstNotPass: firstOfTask.filter(c => c.result !== 'pass').length,
+			claims: cs.length, claimsNotConfirmed: cs.filter(c => c.result !== 'pass').length, claimsWaiting: all.length - cs.length,
+			firstTry: done.filter(t => t.retries === 0).length, linked: ts.filter(t => t.linked).length, withRatio: withRatio.length,
+			medianRatio: median(withRatio.map(t => t.ratio)), medianRatioSpan: median(withRatio.map(t => t.ratioSpan)),
+			medianErrorRaw: median(withRatio.map(t => t.errorRaw)), medianErrorFactor: median(withRatio.map(t => t.errorFactor)),
+			factorCloser: withRatio.filter(t => t.errorFactor < t.errorRaw).length };
+	};
+	const rows = [...groups].map(([name, ts]) => sum(name, ts));
+	return { rows, all: sum('All study tasks (setup left out)', tasks.filter(t => !isSetup(t))) };
 }
 
 // ---- measures -----------------------------------------------------------------------------------------------------
@@ -247,7 +386,7 @@ function checkTags(repo, phases) {
 function parseArgs(argv) {
 	const o = { projects: [], match: [], sessions: [], excludeSessions: [], all: false };
 	const many = { '--projects': 'projects', '--match': 'match', '--session': 'sessions', '--exclude-session': 'excludeSessions' };
-	const one = { '--phases': 'phases', '--owner-steps': 'ownerSteps', '--until': 'until', '--repo': 'repo', '--json': 'json' };
+	const one = { '--phases': 'phases', '--owner-steps': 'ownerSteps', '--ledger': 'ledger', '--until': 'until', '--repo': 'repo', '--json': 'json' };
 	for (let i = 0; i < argv.length; i++) {
 		const a = argv[i];
 		if (a === '--all') o.all = true;
@@ -260,6 +399,7 @@ function parseArgs(argv) {
 	if (!o.projects.length) {
 		let names = []; try { names = fs.readdirSync(root); } catch { }
 		o.projects = names.filter(n => /^d--git$/i.test(n) || /^d--git-backtoone-godot/i.test(n)).map(n => path.join(root, n));
+		if (fs.existsSync(COPIES)) o.projects.push(COPIES);   // the copies kept past Claude Code's 30 days (deviation 1)
 	}
 	if (!o.match.length) o.match = ['BackToOne-Godot'];
 	return o;
@@ -280,6 +420,13 @@ async function main() {
 	const result = compute(phaseInfo, data, stepInfo.steps);
 	const problems = [...phaseInfo.problems, ...stepInfo.problems, ...(opts.repo ? checkTags(opts.repo, phaseInfo.phases) : [])];
 	if (raw.fileStats.badLines) problems.push(`${raw.fileStats.badLines} transcript lines were not JSON (skipped)`);
+	let ledger = null, taskInfo = null, taskSummary = null;
+	if (opts.ledger) {
+		ledger = parseLedger(fs.readFileSync(opts.ledger, 'utf8'));
+		taskInfo = measureTasks(ledger, data, untilMs);
+		taskSummary = summarizeTasks(taskInfo.tasks, ledger.claims, phaseInfo);
+		problems.push(...ledger.problems, ...taskInfo.problems);
+	}
 
 	console.log(`Transcripts: ${raw.fileStats.files} files, ${raw.fileStats.lines} lines, in ${opts.projects.length} folder(s)`);
 	console.log(`Sessions counted: ${keep.size} of ${raw.sessions.size}` + (opts.all ? ' (--all)' : ` (match: ${opts.match.join(', ')})`));
@@ -297,15 +444,36 @@ async function main() {
 	if (result.total.firstToLastMs !== undefined) console.log(`\nFirst start to last stop: ${h(result.total.firstToLastMs)} h`);
 	const models = Object.entries(result.total.models).map(([k, v]) => `${k} ${v}`).join(', ');
 	console.log(`Models (responses in any phase): ${models || 'none'}`);
+	if (raw.fileStats.repeated) console.log(`Repeated entries dropped (transcript copies): ${raw.fileStats.repeated}`);
+	if (taskSummary) {
+		const f = (x, d = 2) => x === null || x === undefined ? '-' : x.toFixed(d);
+		console.log('\n| Tasks by phase | Tasks | Done | Parked | Open | Retries | Claims | Not confirmed first time | First-try done | Linked | With estimate | Median measured / raw estimate | Median raw error | Median x0.34 error | x0.34 closer |');
+		console.log('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
+		for (const r of [...taskSummary.rows, taskSummary.all])
+			console.log(`| ${r.group} | ${r.tasks} | ${r.done} | ${r.parked} | ${r.open} | ${r.retries} | ${r.claims}${r.claimsWaiting ? ` (+${r.claimsWaiting} waiting)` : ''} | ${r.claimsNotConfirmed} | ${r.firstTry} | ${r.linked} | ${r.withRatio} | ${f(r.medianRatio)} | ${f(r.medianErrorRaw)} | ${f(r.medianErrorFactor)} | ${r.factorCloser} |`);
+		const a = taskSummary.all, agentH = result.total.activeStreamsMs / 3600000;
+		console.log('\nRe-tests (deviation 1), all study tasks (setup left out):');
+		console.log(`- Time quotes: median measured / raw estimate ${f(a.medianRatio)} over ${a.withRatio} task(s) (first-to-last unit: ${f(a.medianRatioSpan)}). ` +
+			(a.medianRatio === null ? 'No verdict.' : a.medianRatio <= 0.5 ? 'Agrees (0.5 or lower).' : 'Disagrees (above 0.5).'));
+		console.log(`- Done claims: ${a.claimsNotConfirmed} of ${a.claims} not confirmed by their first check` + (a.claims ? ` (${(100 * a.claimsNotConfirmed / a.claims).toFixed(0)}%). ` +
+			(a.claimsNotConfirmed / a.claims >= 0.25 ? 'Agrees (25% or more).' : 'Disagrees (under 25%).') : '. No verdict.'));
+		console.log(`- Owner, per active agent-hour in any phase: ${agentH ? (result.total.ownerMessages / agentH).toFixed(3) : '-'} messages, ` +
+			`${agentH ? (result.total.ownerInterrupts / agentH).toFixed(3) : '-'} interrupts, ${agentH ? (result.total.ownerMinutes / agentH).toFixed(2) : '-'} step minutes.`);
+		console.log(`- Per task (the first check of each task's first claim, as tools/ledger.js counts it): ${a.tasksFirstNotPass} of ${a.tasksChecked} not pass.`);
+		console.log(`- First-try landing: ${a.firstTry} of ${a.done} done task(s) with no reopened check. Later fails on done tasks: ${a.laterFails}. Tasks that needed the owner: ${a.ownerNeeded}.`);
+		const sweepMin = ledger.sweeps.reduce((n, s) => n + (s.start ? (s.t - s.start) / 60000 : 0), 0);
+		console.log(`- Sweeps: ${ledger.sweeps.length}, ${sweepMin.toFixed(1)} min in all (counted in whichever phase was open).`);
+	}
 	console.log(problems.length ? '\nProblems:\n' + problems.map(p => '- ' + p).join('\n') : '\nProblems: none');
 	if (opts.json) {
 		const sessionsOut = [...keep].map(id => ({ id, reason: why.get(id), first: new Date(raw.sessions.get(id).first).toISOString(), last: new Date(raw.sessions.get(id).last).toISOString() }));
 		fs.writeFileSync(opts.json, JSON.stringify({ generated: new Date().toISOString(), until: new Date(untilMs).toISOString(),
-			rules: { gapMinutes: GAP_MS / 60000, cacheReadWeight: CACHE_READ_WEIGHT }, files: raw.fileStats, sessions: sessionsOut,
-			...result, problems }, null, 1) + '\n');
+			rules: { gapMinutes: GAP_MS / 60000, cacheReadWeight: CACHE_READ_WEIGHT, quoteFactor: QUOTE_FACTOR }, files: raw.fileStats, sessions: sessionsOut,
+			...result, tasks: taskInfo ? taskInfo.tasks : undefined, taskSummary: taskSummary || undefined,
+			claims: ledger ? ledger.claims : undefined, sweeps: ledger ? ledger.sweeps : undefined, problems }, null, 1) + '\n');
 	}
 }
 
 module.exports = { parsePhases, parseOwnerSteps, readTranscripts, selectSessions, compute, checkTags, mergeIntervals, overlap,
-	activeMs, ownerKind, isOwnerMessage, GAP_MS };
+	activeMs, ownerKind, isOwnerMessage, parseLedger, measureTasks, summarizeTasks, GAP_MS };
 if (require.main === module) main().catch(e => { console.error(e.message); process.exit(1); });

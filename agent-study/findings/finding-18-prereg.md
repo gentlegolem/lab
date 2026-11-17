@@ -183,3 +183,16 @@ The ledger's self-reported actuals are shown next to it but not used for any rul
 | 17: done claims often go unconfirmed | done claims whose first independent check didn't pass (fail or not checked) | that share is 25% or more |
 | none yet (the jam's transcripts as the baseline): how often the owner steps in | owner messages, interrupts and owner-step minutes per active agent-hour | no rule. Reported next to the jam's rate from the same tool: 32 owner messages and 1 interrupt in 194.97 active agent-hours |
 | first-try landing | tasks done with no reopened check | no rule. Reported |
+
+### 2. The timing tool reads the task ledger and counts repeated entries once (after the first start marker)
+The first start marker (Plan) went in at 03:14:28 UTC. The changes below were asked for before it, along with
+deviation 1, but they're committed after it, in the same commit as this note.
+- `timing.js` reads `study/LEDGER.jsonl` (`--ledger`) and prints deviation 1's re-tests by the rules set there.
+  It links a task to its transcripts in two ways: through each subagent's Agent tool description, which starts with
+  the task id, or through the session a task names. No rule of this pre-registration or of deviation 1 changes.
+- An entry found in more than one transcript file now counts once, by its uuid. That covers rule 2's copies. It
+  also changes one figure on old data: 134 jam entries are each repeated in two subagent files. The jam baseline
+  for owner interventions becomes 32 owner messages and 1 interrupt in 194.74 active agent-hours. Deviation 1 says
+  194.97.
+- One test run on the port's live logs, at 03:15 UTC, a minute into Plan, showed only that the files parse. No rule
+  was changed after it.

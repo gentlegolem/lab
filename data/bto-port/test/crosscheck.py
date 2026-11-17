@@ -12,17 +12,19 @@ def ts(s):
     return datetime.fromisoformat(s.replace('Z', '+00:00')).timestamp()
 
 root, lo, hi = sys.argv[1], ts(sys.argv[2]), ts(sys.argv[3])
-responses, owners, interrupts, streams = {}, set(), set(), {}
-for d, _, files in os.walk(root):
-    for f in files:
-        if not f.endswith('.jsonl'):
-            continue
-        with open(os.path.join(d, f), encoding='utf-8') as fh:
+responses, owners, interrupts, streams, seen = {}, set(), set(), {}, set()
+paths = sorted(os.path.join(d, f) for d, _, files in os.walk(root) for f in files if f.endswith('.jsonl'))
+for p in paths:
+        with open(p, encoding='utf-8') as fh:
             for line in fh:
                 try:
                     o = json.loads(line)
                 except ValueError:
                     continue
+                if o.get('uuid'):  # an entry repeated in another file (a copy, or a subagent file) counts once
+                    if o['uuid'] in seen:
+                        continue
+                    seen.add(o['uuid'])
                 if o.get('type') not in ('user', 'assistant') or 'timestamp' not in o:
                     continue
                 t = ts(o['timestamp'])

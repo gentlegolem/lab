@@ -1,8 +1,9 @@
 # Port timing (finding 18)
 
 The timing tool for [finding 18](../../agent-study/findings/finding-18-prereg.md), the agent-led port of Back to One
-from UE 5.9 to Godot 4. It was written and tested before the port's first start marker, and its rules below are
-fixed from then on: a change is a deviation.
+from UE 5.9 to Godot 4. It was written and tested before the port's first start marker (2026-11-17, 03:14:28 UTC).
+The ledger reading and the once-per-entry rule were added just after it (the pre-registration's deviation 2). The
+rules below are fixed from then on: a change is a deviation.
 
 | File | What it does |
 |---|---|
@@ -12,12 +13,16 @@ fixed from then on: a change is a deviation.
 | `test/crosscheck.py` | a second, separate count (Python) for checking a real run's totals |
 
 ```
-node timing.js --phases <port repo>/study/PHASES.log --owner-steps <port repo>/study/OWNER_STEPS.log --repo <port repo> --json <out.json>
+node timing.js --phases <port repo>/study/PHASES.log --owner-steps <port repo>/study/OWNER_STEPS.log --ledger <port repo>/study/LEDGER.jsonl --repo <port repo> --json <out.json>
 ```
-With no `--projects`, it reads `~/.claude/projects/D--Git` and every `~/.claude/projects/D--Git-BackToOne-Godot*`
-folder, where the port's sessions write their transcripts. `--until` sets the end of a phase that's still open
-(default: now). `--all`, `--session` and `--exclude-session` change which sessions count; using them for the result
-is a deviation.
+With no `--projects`, it reads these folders:
+- `~/.claude/projects/D--Git` and every `~/.claude/projects/D--Git-BackToOne-Godot*` folder, where the port's
+  sessions write their transcripts;
+- `D:/LabData/f18/transcripts`, the copies kept past Claude Code's 30 days, when it exists.
+
+An entry found in more than one file counts once, by its uuid: a copy, or a subagent file that repeats another
+file's entries. `--until` sets the end of a phase that's still open (default: now). `--all`, `--session` and
+`--exclude-session` change which sessions count; using them for the result is a deviation.
 
 ## Rules
 - **Sessions counted.** A session counts if any of its entries has a working folder, or any of its tool calls has an
@@ -50,18 +55,56 @@ is a deviation.
   - Interrupts ("[Request interrupted by user...]") get their own column.
 - **Owner steps.** `OWNER_STEPS.log`, one step per line: UTC time, minutes, what. A step falls in the phases open at
   its time.
+- **Task ledger** (`--ledger`, deviation 1). `study/LEDGER.jsonl` from the port's `tools/ledger.js`: append-only
+  events folded by task id.
+  - **Events:**
+    - `open`: phase, thread, session, estimate in agent-minutes and thousands of tokens;
+    - `claim`, then `check`: pass, fail or not-checked, plus who checked and on what;
+    - `park`, `reopen`, `owner`;
+    - `sweep-start`, then `sweep`.
+  - **A task's threads.** Subagents whose Agent tool description starts with the task id (read from
+    `agent-<id>.meta.json`), or the lead thread of the session the task names. Its window runs from `open` to its
+    close (or `--until`). A subagent that starts before its task's `open` is listed as a problem: the estimate came
+    after the work began.
+  - **Per task:**
+    - measured agent time: the active time of its threads in its window;
+    - first-to-last;
+    - reported tokens;
+    - measured / raw estimate, and the raw and x0.34 errors.
+  - **Claims.** Each claim's first check: anything but pass counts as not confirmed. A claim still waiting for its
+    check isn't counted. A fail on a task already done is a later fail, not a claim. The per-task count (the first
+    check of each task's first claim), as `tools/ledger.js` counts it, is printed too.
+  - **Re-tests.** Setup work (no phase) is left out, as deviation 1 sets. The rules are printed with each verdict:
+    - time quotes agree if the median of measured / raw estimate is 0.5 or lower;
+    - done claims agree if 25% or more aren't confirmed;
+    - owner messages, interrupts and step minutes per active agent-hour, first-try landing, later fails and the
+      sweeps' minutes are reported with no rule.
+  - **Not used:** the ledger's self-reported actuals.
 - **Tag check** (`--repo`). Each phase's first start and last stop must have a tag `phase/<name>/<start|stop>` (name
   in lower case, spaces as dashes) within 5 minutes of the log's time. Anything else is listed under "Problems",
   with bad log lines and phases left open.
 
-## Tests (2026-11-16, before the first start marker)
+## Tests (2026-11-17 UTC; the ledger and copy cases just after the first start marker)
 **Made-up transcripts.** `node test.js`: all passed (Node 24.18). Its cases:
 - overlapping phases, a phase still open, a phase name with spaces, a bad line, a stop with no start;
 - a response written twice, a `<synthetic>` entry, a subagent thread;
 - a session matched by its working folder, one matched only by a tool call, and one that doesn't match;
 - peer, task-notification, meta and subagent entries that aren't owner messages, and an interrupt;
 - owner steps inside and outside the phases;
-- the tag check: one tag right, one 20 minutes off, the rest missing.
+- the tag check: one tag right, one 20 minutes off, the rest missing;
+- a second copy of every transcript, which changes no measure;
+- two ledgers with worked answers:
+  - the first version's events: done, and a check with no claim before it;
+  - the v2 events: claim and check apart, a later fail on a done task, not-checked, reopen, owner, a timed sweep,
+    setup work. Tasks are linked by a subagent description and by a session.
+
+**Against the port's own ledger tool.** A scratch ledger written by a copy of the port's `tools/ledger.js` (v2, port
+commit `79c610d`) went through 19 commands, covering every event type but `reopen` (the made-up v2 ledger covers that
+one). timing.js gives the same counts as that tool's `summary`:
+- 4 opened: 2 done, 2 parked, 0 open, 2 reopened;
+- 3 study tasks;
+- first check not pass on 2 of 2 tasks;
+- 0 done on the first try.
 
 **The jam's own transcripts.** Command:
 ```
@@ -71,26 +114,30 @@ It read 223 files (2 lead sessions and 221 subagents, 181,873 lines) in 7 second
 
 | Phase | Wall-clock h | Active h (agents summed) | Active h (per session) | Any agent active h | Reported M | Plan-eq M | Cache reads M | Responses | Owner messages | Interrupts |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Jam (all four days) | 89.58 | 194.97 | 67.93 | 65.77 | 125.80 | 736.98 | 6,111.77 | 32,783 | 32 | 1 |
+| Jam (all four days) | 89.58 | 194.74 | 67.93 | 65.77 | 125.80 | 736.98 | 6,111.77 | 32,783 | 32 | 1 |
 | Thursday | 24.00 | 42.56 | 18.10 | 18.10 | 30.11 | 171.39 | 1,412.78 | 7,413 | 7 | 0 |
-| Friday | 24.00 | 37.99 | 14.49 | 13.13 | 21.99 | 135.60 | 1,136.13 | 5,754 | 10 | 0 |
+| Friday | 24.00 | 37.75 | 14.49 | 13.13 | 21.99 | 135.60 | 1,136.13 | 5,754 | 10 | 0 |
 | Saturday | 24.00 | 63.44 | 20.11 | 19.30 | 43.93 | 250.04 | 2,061.13 | 11,549 | 13 | 1 |
 | Sunday (to the 17:35 submission) | 17.58 | 50.99 | 15.23 | 15.23 | 29.78 | 179.95 | 1,501.74 | 8,067 | 2 | 0 |
 
-- **Sums:** the four days add up to the Jam row, which overlaps them (agents summed 194.98, rounding;
-  responses, tokens and owner messages exactly). No problems were listed.
+- **Sums:** the four days add up to the Jam row, which overlaps them: agents summed, responses, tokens and owner
+  messages. No problems were listed.
 - **Second count:** `python -I test/crosscheck.py <folder> 2026-11-12T05:00:00Z 2026-11-15T22:35:00Z` gave the same
   figures for the Jam row: 32,783 responses, 125,801,074 reported tokens, 6,111,773,413 cache reads, 32 owner
-  messages, 1 interrupt and 194.9729 active agent-hours.
-- **Fix made during the test:** the first run counted 33 owner messages. The extra one was an interrupt, which
-  carries no origin field, so interrupts now have their own column.
+  messages, 1 interrupt and 194.7391 active agent-hours.
+- **Fixes made during the test:**
+  - The first run counted 33 owner messages. The extra one was an interrupt, which carries no origin field, so
+    interrupts now have their own column.
+  - 134 entries appear in two subagent files each, with the same uuid and time. Counting them in both threads had
+    added 0.23 agent-hours (194.97 before). Each entry now counts once, in both counts. Responses, tokens and owner
+    messages didn't change.
 - **Models** (responses in the Jam row): `claude-opus-5-5` 30,302, `claude-sonnet-5-5` 1,253, `claude-fable-5-2`
   1,224, `claude-haiku-5-5` 4.
 - **Against the jam's task ledger** (the pre-registration's "Jam cost"), the transcripts count more:
 
   | | Transcripts | Ledger |
   |---|---|---|
-  | Agent time | 195.0 active agent-hours | 174.7 summed task-hours |
+  | Agent time | 194.7 active agent-hours | 174.7 summed task-hours |
   | Wall-clock | 65.8 h with any agent active | 63.5 h |
   | Output tokens | 22.6M | 15.6M |
   | Cache writes | 103.1M | 57.8M |

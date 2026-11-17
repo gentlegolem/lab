@@ -25,7 +25,8 @@ const phasesLog = [
 	`${at('09:00')}\tD\tstop`,
 ].join('\n');
 
-const asst = (t, id, u, extra = {}) => ({ type: 'assistant', timestamp: at(t), sessionId: 'S1', requestId: 'r' + id, cwd: 'D:\\Git',
+let uid = 0;   // every user and assistant entry has its own uuid, as in real transcripts
+const asst = (t, id, u, extra = {}) => ({ type: 'assistant', uuid: 'a' + (uid++), timestamp: at(t), sessionId: 'S1', requestId: 'r' + id, cwd: 'D:\\Git',
 	message: { id: 'm' + id, model: 'claude-opus-5-5', usage: { input_tokens: u[0], output_tokens: u[1], cache_creation_input_tokens: u[2], cache_read_input_tokens: u[3] }, content: [] }, ...extra });
 const user = (t, extra = {}) => ({ type: 'user', timestamp: at(t), sessionId: 'S1', uuid: 'u' + t + (extra.tag || ''), cwd: 'D:\\Git',
 	message: { role: 'user', content: [{ type: 'tool_result', content: 'ok' }] }, ...extra });
@@ -68,6 +69,7 @@ const stepsLog = [`${at('10:15')}\t12\texported the meshes`, `${at('12:10')},3,c
 	const w = (f, rows) => fs.writeFileSync(f, rows.map(r => JSON.stringify(r)).join('\n') + '\nnot json\n');
 	w(path.join(proj, 'S1.jsonl'), s1); w(path.join(proj, 'S1', 'subagents', 'agent-aaa.jsonl'), s1sub);
 	w(path.join(proj, 'S2.jsonl'), s2); w(path.join(proj, 'S3.jsonl'), s3);
+	fs.writeFileSync(path.join(proj, 'S1', 'subagents', 'agent-aaa.meta.json'), JSON.stringify({ description: 'T1 port the clock' }));
 
 	const P = T.parsePhases(phasesLog, ms('14:00'));
 	assert.deepStrictEqual(P.phases.map(p => p.name), ['A', 'B', 'Audio and UI', 'C', 'D']);
@@ -133,6 +135,90 @@ const stepsLog = [`${at('10:15')}\t12\texported the meshes`, `${at('12:10')},3,c
 	assert.deepStrictEqual(tp, ['tag phase/a/stop: 2026-12-01T11:20:00.000Z, log says 2026-12-01T11:00:00.000Z',
 		'tag phase/audio-and-ui/stop: missing', 'tag phase/b/start: missing', 'tag phase/b/stop: missing',
 		'tag phase/c/start: missing', 'tag phase/d/stop: missing']);
+
+	// Transcript copies: the same files under a second folder count once.
+	const copy = path.join(dir, 'copies', 'D--Git');
+	fs.cpSync(proj, copy, { recursive: true });
+	const twice = await T.readTranscripts([proj, path.join(dir, 'copies')], ['BackToOne-Godot']);
+	assert.strictEqual(twice.fileStats.repeated, raw.fileStats.lines - raw.fileStats.badLines - 1);  // all but S1's title line (no uuid)
+	const A2 = T.compute(P, T.selectSessions(twice, { all: false, sessions: [], excludeSessions: [] }).data, S.steps).rows.find(r => r.phase === 'A');
+	for (const k of ['activeStreamsMs', 'activeSessionsMs', 'spanMs', 'reported', 'cacheRead', 'messages', 'ownerMessages', 'ownerInterrupts'])
+		assert.strictEqual(A2[k], A[k], k);
+
+	// Ledger (deviation 1), in tools/ledger.js's event format plus the proposed claim events and links.
+	const L = [
+		{ ev: 'open', at: at('10:00'), id: 'T1', phase: 'a', title: 'clock', estimate: { agent_min: 10, ktokens: 1 } },
+		{ ev: 'done', at: at('10:05'), id: 'T1', claim: 'x', check: { kind: 'scenario', result: 'pass' }, actual: { agent_min: 4 } },
+		{ ev: 'open', at: at('13:00'), id: 'T2', phase: 'c', estimate: { agent_min: 4 }, session: 'S3' },
+		{ ev: 'claim', at: at('13:05'), id: 'T2' },
+		{ ev: 'check', at: at('13:06'), id: 'T2', check: { kind: 'x', result: 'fail' } },
+		{ ev: 'done', at: at('13:20'), id: 'T2', check: { result: 'pass' } },
+		{ ev: 'open', at: at('09:30'), id: 'T3', phase: 'setup', estimate: { agent_min: 5 } },
+		{ ev: 'park', at: at('09:40'), id: 'T3', reason: 'r', left: 'l', next: 'n' },
+		{ ev: 'open', at: at('12:00'), id: 'T4', phase: 'audio-and-ui', estimate: { agent_min: 3 } },
+		{ ev: 'check', at: at('12:10'), id: 'T4', check: { kind: 'x', result: 'not checked' } },
+		{ ev: 'open', at: at('12:15'), id: 'T5', phase: 'audio-and-ui', estimate: { agent_min: 3 } },
+		{ ev: 'claim', at: at('12:20'), id: 'T5' },
+		{ ev: 'sweep', at: at('12:30'), counts: { opened: 5 } },
+		{ ev: 'done', at: at('12:31'), id: 'T9' },
+	].map(e => JSON.stringify(e)).join('\n') + '\nnot json\n';
+	const LG = T.parseLedger(L);
+	assert.strictEqual(LG.problems.length, 2, LG.problems.join('; '));   // T9 before open, the bad line
+	assert.strictEqual(LG.sweeps.length, 1);
+	const byId = id => LG.tasks.find(t => t.id === id);
+	assert.deepStrictEqual(['T1', 'T2', 'T3', 'T4', 'T5'].map(id => byId(id).state), ['done', 'done', 'parked', 'parked', 'open']);
+	assert.strictEqual(byId('T2').retries, 1);
+	// Claims: T1 done (pass), T2's claim (its check failed), T2 done (pass), T4 (not checked); T5's claim waits.
+	assert.deepStrictEqual(LG.claims.map(c => c.task + ':' + c.result), ['T1:pass', 'T2:fail', 'T2:pass', 'T4:not checked', 'T5:no check yet']);
+	const MT = T.measureTasks(LG, data, ms('14:00'));
+	const m = id => MT.tasks.find(t => t.id === id);
+	// T1: linked by its subagent's description; 10:01-10:03 inside 10:00-10:05 = 2 min of 10 estimated.
+	assert.strictEqual(m('T1').linked, true); assert.strictEqual(m('T1').activeMs, min(2)); assert.strictEqual(m('T1').reported, 555);
+	assert.strictEqual(m('T1').ratio, 0.2); assert.ok(Math.abs(m('T1').errorFactor - Math.abs(2 / 3.4 - 1)) < 1e-12);
+	// T2: linked by its session's lead thread; 13:10-13:12 = 2 min of 4.
+	assert.strictEqual(m('T2').activeMs, min(2)); assert.strictEqual(m('T2').ratio, 0.5); assert.strictEqual(m('T2').reported, 777);
+	assert.strictEqual(m('T3').linked, false);
+	assert.deepStrictEqual(MT.problems, ['3 task(s) with no transcript link (no subagent description starting with the id, no session or agent)']);
+	const SM = T.summarizeTasks(MT.tasks, LG.claims, P);
+	assert.deepStrictEqual(SM.rows.map(r => r.group + ':' + r.tasks), ['A:1', 'C:1', 'setup (no phase):1', 'Audio and UI:2']);
+	const all5 = SM.all;   // T3 (setup) is left out of the re-tests
+	assert.deepStrictEqual([all5.tasks, all5.done, all5.parked, all5.open, all5.retries, all5.claims, all5.claimsWaiting, all5.claimsNotConfirmed, all5.firstTry, all5.linked, all5.withRatio, all5.factorCloser],
+		[4, 2, 1, 1, 1, 4, 1, 2, 1, 2, 2, 2]);
+	assert.ok(Math.abs(all5.medianRatio - 0.35) < 1e-12); assert.ok(Math.abs(all5.medianErrorRaw - 0.65) < 1e-12);
+	assert.deepStrictEqual([all5.tasksChecked, all5.tasksFirstNotPass], [3, 2]);   // T1 pass, T2 fail, T4 not checked
+
+	// Ledger v2 (tools/ledger.js after the gap list): claim and check apart, a later fail on a done task, not-checked,
+	// reopen, owner, a timed sweep, setup work with no phase.
+	const L2 = [
+		{ ev: 'open', at: at('10:00'), id: 'T1', phase: 'a', thread: 'agent', estimate: { agent_min: 10, ktokens: 1 }, jam_refs: ['gameplay-1112-1652'] },
+		{ ev: 'claim', at: at('10:04'), id: 'T1', by: 'agent', text: 'clock done', commits: ['c1'] },
+		{ ev: 'check', at: at('10:05'), id: 'T1', by: 'lead', result: 'pass', kind: 'scenario', ref: 'clock', commit: 'c1' },
+		{ ev: 'check', at: at('10:30'), id: 'T1', by: 'lead', result: 'fail', kind: 'scenario', ref: 'clock-2' },
+		{ ev: 'claim', at: at('10:40'), id: 'T1', by: 'agent', text: 'fixed', commits: ['c1', 'c2'] },
+		{ ev: 'check', at: at('10:45'), id: 'T1', by: 'lead', result: 'pass', kind: 'scenario', ref: 'clock-2' },
+		{ ev: 'open', at: at('12:00'), id: 'T6', phase: null, thread: 'main', session: 'S3', estimate: { agent_min: 5, ktokens: 1 } },
+		{ ev: 'claim', at: at('12:05'), id: 'T6', by: 'lead', text: 'x' },
+		{ ev: 'check', at: at('12:06'), id: 'T6', by: 'owner', result: 'not-checked', kind: 'x', ref: 'y' },
+		{ ev: 'reopen', at: at('12:20'), id: 'T6', reason: 'r' },
+		{ ev: 'owner', at: at('12:21'), id: 'T6' },
+		{ ev: 'park', at: at('12:25'), id: 'T6', reason: 'r', left: 'l', next: 'n' },
+		{ ev: 'sweep-start', at: at('12:26') },
+		{ ev: 'sweep', start: at('12:26'), at: at('12:36'), counts: { opened: 2 } },
+	].map(e => JSON.stringify(e)).join('\n') + '\n';
+	const V = T.parseLedger(L2);
+	assert.deepStrictEqual(V.problems, []);
+	assert.deepStrictEqual(V.claims.map(c => c.task + ':' + c.result), ['T1:pass', 'T1:pass', 'T6:not checked']);
+	const v1 = V.tasks.find(t => t.id === 'T1'), v6 = V.tasks.find(t => t.id === 'T6');
+	assert.deepStrictEqual([v1.state, v1.retries, v1.laterFails, v1.end], ['done', 1, 1, ms('10:45')]);
+	assert.deepStrictEqual(v1.commits, ['c1', 'c2']); assert.deepStrictEqual(v1.jamRefs, ['gameplay-1112-1652']);
+	assert.deepStrictEqual([v6.state, v6.ownerNeeded, v6.phase], ['parked', true, null]);
+	assert.deepStrictEqual(V.sweeps.map(s => (s.t - s.start) / 60000), [10]);
+	const VS = T.summarizeTasks(T.measureTasks(V, data, ms('14:00')).tasks, V.claims, P);
+	assert.deepStrictEqual(VS.rows.map(r => r.group), ['A', 'setup (no phase)']);
+	// T6 is setup work, so the re-tests count T1 only: two claims, both passed; one reopened check, so not first-try.
+	assert.deepStrictEqual([VS.all.tasks, VS.all.claims, VS.all.claimsNotConfirmed, VS.all.tasksChecked, VS.all.tasksFirstNotPass, VS.all.firstTry, VS.all.laterFails, VS.all.ownerNeeded],
+		[1, 2, 0, 1, 0, 0, 1, 0]);
+	assert.strictEqual(VS.rows.find(r => r.group === 'setup (no phase)').claimsNotConfirmed, 1);
 
 	fs.rmSync(dir, { recursive: true, force: true });
 	console.log('timing.js tests: all passed');

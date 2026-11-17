@@ -13,6 +13,8 @@ once by one agent (A) and once by an architect and specialists (B), scored by th
 | `harness.js` | containers, agent runs, the token cap, patches, measures, audit, the seal check |
 | `run_eval.py` | runs the official evaluator on a Windows host (one method fixed: patch files written with LF, `/` paths) |
 | `briefs/` | the prompts: A, B's architect, B's groups, A's estimator (general instructions only) |
+| `estimates/` | A's estimator line and B's `PLAN.md`, committed before any build (tag `f17-estimates`) |
+| `results/` | the scores and per-run counts (see the end of the runbook) |
 
 Data, workspaces and logs live outside the repo, on D: (`D:/LabData/`). Nothing here holds issue texts, fixes or
 tests.
@@ -45,6 +47,14 @@ Steps 1 and 3 are the owner's or need his OK; each other step is a command.
 9. **After.** `node harness.js seal-check`, `collect`, `measure`, `audit`, then `sh download.sh`, `prepare.py evalset`
    again, `run_eval.py` on `kit/predictions-A.json` and `kit/predictions-B.json` (output folders `kit/logs/eval-A` and
    `kit/logs/eval-B`), then `node harness.js score` (the pre-registered rules, to `kit/score.json`).
+10. **Check without build products** (deviation 9). `node harness.js clean`, `run_eval.py` on
+   `kit/predictions-A-clean.json` and `kit/predictions-B-clean.json` (output folders `kit/logs/eval-A-clean` and
+   `kit/logs/eval-B-clean`), then `SWL_EVAL_SUFFIX=-clean node harness.js score` (to `kit/score-clean.json`).
+
+**Results** (`results/`, counts only): `score.json` and `score-clean.json` (the two scores), `tests.json` (tests found
+passing per task and evaluator run), `runs.json` (time, tokens, tool calls and refusals per run) and `gold-check.json`.
+The patches, transcripts and evaluator logs stay local: the patches are diffs of httrack's GPL-3.0 code, and the logs
+hold the benchmark's test names.
 
 `SWL_RUNS` moves the runs folder; `SWL_TEST_MODEL` swaps every model for a small one, for testing the harness only.
 The audit's flags include refused attempts; the run's refused count says how many were refused.

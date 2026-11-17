@@ -197,3 +197,88 @@ larger quote, 2,100k, so 6,300k reported for each build.
    of A's patches and 4 of B's. The main result scores the patches as pre-registered. A labelled check, fixed before
    any score (`node harness.js clean`), scores the same patches without new files named `*.log`, `*.trs` or
    `.dirstamp` and without new libtool wrapper scripts.
+
+## Result (scored 2026-11-17 UTC)
+
+**Main result, as pre-registered: no difference found.** A resolved 3 of 10, B 2 of 10; the rule needs a gap of 2.
+The check without build products gives 3 and 3, the same three tasks. Both builds finished: no cap was reached (the
+larger build used 433k of its 6,300k), no agent needed "continue", and nothing was restarted after deviation 8. Files:
+`data/swebench-live/results/` (counts only; the patches, transcripts and evaluator logs are kept locally).
+
+| | A: one agent | B: architect + 4 groups |
+|---|---|---|
+| Runs | 1 (Sonnet) | 5 (architect on Opus, 4 groups on Sonnet) |
+| Resolved, as pre-registered (without build products) | 3 of 10 (3) | 2 of 10 (3) |
+| Tasks marked `DONE` | 10 of 10 | 10 of 10 |
+| Agent-minutes | 17.9 | 17.8 (architect 1.4, groups 16.4) |
+| Wall-clock minutes | 17.9 | 18.4 (architect 1.4, gap 12.3, groups 4.7) |
+| Reported tokens | 339k | 433k (architect 36k, groups 398k) |
+| Cache reads | 23.9M | 12.3M |
+| Plan-equivalent tokens | 2.72M | 1.66M (architect 0.08M, groups 1.59M) |
+| Tool calls (refused) | 373 (5) | 417 (15: architect 1, groups 14) |
+
+**Per task.** Both resolved 829 and 856; A resolved 850, and B did only in the check. Neither resolved 893, 876, 851,
+849, 837, 835 or 830. No patch broke a passing test: in every evaluator run, every pass-to-pass test that ran passed.
+In 5 of the 7, the fix's one fail-to-pass test failed in both builds; in 849, 1 of its 3 passed in both; in 837 no
+test result came out at all in either build, as with the no-op patch in the gold check.
+
+**B's task 850 in the main score.** B's patch carried the test results its group's own test run left behind for 4
+tests (`.log` and `.trs` files for `00_runnable`, `01_engine-gmtime`, `87_local-proxytrack-nodate` and
+`88_local-proxytrack-badmtime`). Those 4 are exactly the tests missing from the evaluator's run: no result line for
+them in its output, most likely because the test runner found their results already there and didn't run them again.
+The evaluator needs every fail-to-pass test to pass, so 184 of 188 left the task unresolved; without the build
+products all 188 passed. The one-task gap in the main score comes from the pre-registered collection (`git add -A`),
+not from the code. A's patch for 850 held no build products.
+
+**"Done" claims: agrees.** Every agent marked every one of its tasks `DONE`, and 15 of the 20 claims were unresolved
+(75%; A 7 of 10, B 8 of 10), above the 25% line. In the check: 14 of 20 (70%).
+
+**Minutes: x0.34 was closer in both conditions, so the replay agrees with section 4, but both methods were again far
+too high.**
+
+| | Measured | Raw quote, error | Raw x 0.34, error |
+|---|---|---|---|
+| A, agent-minutes | 17.9 | 170, 89% | 57.8, 69% |
+| B, agent-minutes | 17.8 | 175, 90% | 59.5, 70% |
+| B, wall-clock | 18.4 | 62, 70% | 21.1, 13% |
+
+Both builds took about a tenth of their raw quote (0.11 and 0.10); with x0.34 they were still quoted 3.2 and 3.3
+times too high. B's 13% wall-clock error is an accident of timing: 12.3 of its 18.4 minutes are the gap between the
+architect's last message and the groups' start, while this session committed the estimates and the first start was
+stopped and restarted (deviation 8). Without the gap, B's wall-clock is 6.2 minutes: errors 90% raw and 71% with x0.34.
+
+**Cost of the split: disagrees.** B's groups cost 398k reported against 585k forecast, 32% under rather than at least
+15% over, and the measured saving in plan-equivalent, (A - B) / A, is 39% against the 6% forecast. Both halves of the
+rule fail. The saving depends on the unit: in reported tokens B cost 28% more than A (433k against 339k). It comes
+from cache reads: A's one long session re-read 23.9M cached tokens, B's five shorter ones 12.3M. In the main score B
+also resolved one task fewer (the gap the rule calls no difference, explained above); in the check, the same three.
+
+| | Forecast | Measured |
+|---|---|---|
+| Architect | 50k, 10 min | 36k, 1.4 min |
+| G1 (849, 837) | 165k, 50 min | 97k, 3.5 min |
+| G2 (851, 830) | 150k, 45 min | 122k, 4.7 min |
+| G3 (850, 835, 829) | 130k, 35 min | 84k, 3.5 min |
+| G4 (893, 876, 856) | 140k, 35 min | 94k, 4.6 min |
+
+The token quotes were high as well: A used 0.16 of its estimator's 2,100k and B 0.68 of its plan's 635k. The
+architect's own `SOLO` line (690k for one agent doing all 10) was 2.0 times what A used.
+
+**Checks before these numbers are used.**
+1. **The seal.** The seal check found the dataset absent, and no SWE-bench-Live copy in the Hugging Face cache, before
+   and after the builds; the dataset was downloaded again, hash-checked, only for scoring.
+2. **The audit.** No run used a web tool. Every flagged shell command was refused except 4 read-only listings that
+   Claude Code allows inside the working folder (the estimator's one `Get-Content TASKS.md; Get-ChildItem`, the
+   architect's 3 folder listings with `ls`).
+   A's 31 reads outside its folder were Claude Code's own output files for A's background shell commands.
+3. **The repo's own agent files.** httrack ships an `AGENTS.md` and a `CLAUDE.md`, part of the task image and so
+   allowed. Safe mode didn't load them, but A (2 commands) and two of B's groups (G1 2, G4 1) read them through
+   `docker exec`.
+4. **The evaluator.** No patch was empty, and the evaluator reported no error in any of the 4 runs.
+
+**Reading.** On ten issues filed after the models' training cutoff, one agent and an architect with four groups
+resolved about the same share: 3 and 2, or 3 and 3 without build products. Every agent claimed every task done, and
+70-75% of those claims didn't hold, so here a `DONE` line carried no information about the issue's own test. The
+minute quotes were about ten times too high, and x0.34 left them about three times too high, as in finding 14. The
+split's cost depends on the unit: 39% saved in plan-equivalent tokens, 28% more in reported tokens. One run per
+condition on ten related tasks from one repo: the direction can be read, not a rate.

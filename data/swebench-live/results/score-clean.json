@@ -1,0 +1,231 @@
+{
+ "resolved": {
+  "A": 3,
+  "B": 3
+ },
+ "main": "no difference found",
+ "perTask": [
+  {
+   "id": "xroche__httrack-893",
+   "A": false,
+   "B": false,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  },
+  {
+   "id": "xroche__httrack-876",
+   "A": false,
+   "B": false,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  },
+  {
+   "id": "xroche__httrack-856",
+   "A": true,
+   "B": true,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  },
+  {
+   "id": "xroche__httrack-851",
+   "A": false,
+   "B": false,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  },
+  {
+   "id": "xroche__httrack-850",
+   "A": true,
+   "B": true,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  },
+  {
+   "id": "xroche__httrack-849",
+   "A": false,
+   "B": false,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  },
+  {
+   "id": "xroche__httrack-837",
+   "A": false,
+   "B": false,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  },
+  {
+   "id": "xroche__httrack-835",
+   "A": false,
+   "B": false,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  },
+  {
+   "id": "xroche__httrack-830",
+   "A": false,
+   "B": false,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  },
+  {
+   "id": "xroche__httrack-829",
+   "A": true,
+   "B": true,
+   "claimA": "DONE",
+   "claimB": "DONE"
+  }
+ ],
+ "done": {
+  "A": {
+   "done": 10,
+   "doneButUnresolved": 7,
+   "share": 0.7
+  },
+  "B": {
+   "done": 10,
+   "doneButUnresolved": 7,
+   "share": 0.7
+  },
+  "pooled": {
+   "done": 20,
+   "doneButUnresolved": 14,
+   "share": 0.7
+  },
+  "verdict": "agrees"
+ },
+ "minutes": {
+  "A": {
+   "measured": 17.943266666666666,
+   "raw": 170,
+   "errRaw": 0.8944513725490196,
+   "corrected": 57.800000000000004,
+   "errCorrected": 0.6895628604382931,
+   "closer": "x0.34"
+  },
+  "B": {
+   "measured": 17.793216666666666,
+   "raw": 175,
+   "errRaw": 0.8983244761904762,
+   "corrected": 59.50000000000001,
+   "errCorrected": 0.7009543417366948,
+   "closer": "x0.34"
+  },
+  "verdict": "agrees",
+  "Bwall": {
+   "measured": 18.416166666666665,
+   "raw": 62,
+   "errRaw": 0.7029650537634409,
+   "errCorrected": 0.12636780518659085
+  }
+ },
+ "split": {
+  "groupsForecastK": 585,
+  "groupsMeasuredK": 397.618,
+  "groupsOver": -0.3203111111111111,
+  "measuredSaving": 0.38963738271656584,
+  "forecastSaving": 0.06,
+  "perGroup": [
+   {
+    "group": "G1",
+    "tasks": [
+     "xroche__httrack-849",
+     "xroche__httrack-837"
+    ],
+    "forecastK": 165,
+    "measuredK": 97.428,
+    "forecastMin": 50,
+    "measuredMin": 3.5269833333333334
+   },
+   {
+    "group": "G2",
+    "tasks": [
+     "xroche__httrack-851",
+     "xroche__httrack-830"
+    ],
+    "forecastK": 150,
+    "measuredK": 122.047,
+    "forecastMin": 45,
+    "measuredMin": 4.7216
+   },
+   {
+    "group": "G3",
+    "tasks": [
+     "xroche__httrack-850",
+     "xroche__httrack-835",
+     "xroche__httrack-829"
+    ],
+    "forecastK": 130,
+    "measuredK": 83.855,
+    "forecastMin": 35,
+    "measuredMin": 3.497916666666667
+   },
+   {
+    "group": "G4",
+    "tasks": [
+     "xroche__httrack-893",
+     "xroche__httrack-876",
+     "xroche__httrack-856"
+    ],
+    "forecastK": 140,
+    "measuredK": 94.288,
+    "forecastMin": 35,
+    "measuredMin": 4.615616666666667
+   }
+  ],
+  "verdict": "disagrees"
+ },
+ "also": {
+  "restarts": {
+   "A": 0,
+   "B": 0
+  },
+  "refused": {
+   "A-estimator": 0,
+   "B-architect": 1,
+   "B-group-G3": 5,
+   "B-group-G1": 4,
+   "B-group-G4": 2,
+   "B-group-G2": 3,
+   "A-agent": 5
+  },
+  "auditFlags": {
+   "A-estimator": 1,
+   "B-architect": 4,
+   "B-group-G3": 5,
+   "B-group-G1": 4,
+   "B-group-G4": 2,
+   "B-group-G2": 3,
+   "A-agent": 36
+  },
+  "models": [
+   "A-estimator: claude-opus-5-5, effort high",
+   "B-architect: claude-opus-5-5, effort high",
+   "B-group-G3: claude-sonnet-5-5, effort high",
+   "B-group-G1: claude-sonnet-5-5, effort high",
+   "B-group-G4: claude-sonnet-5-5, effort high",
+   "B-group-G2: claude-sonnet-5-5, effort high",
+   "A-agent: claude-sonnet-5-5, effort high"
+  ],
+  "tokens": {
+   "A": {
+    "quoteK": 2100,
+    "measuredK": 338.566,
+    "planEqK": 2724.6495
+   },
+   "B": {
+    "quoteK": 635,
+    "measuredK": 433.446,
+    "planEqK": 1663.0242000000003
+   }
+  },
+  "evaluatorErrors": {
+   "A": [],
+   "B": []
+  },
+  "emptyPatches": {
+   "A": [],
+   "B": []
+  }
+ }
+}

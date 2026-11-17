@@ -1,4 +1,4 @@
-> **DRAFT, not yet published.** Draft v3.7 (2026-11-16). Numbers may still change before release.
+> **DRAFT, not yet published.** Draft v3.8 (2026-11-16). Numbers may still change before release.
 
 # What one multi-agent coding studio measured about its own setup and its agents' claims
 
@@ -401,6 +401,28 @@ observational and after the fact ([finding 16](findings/finding-16-prereg.md); d
   prototype work. The quote pairs were picked afterwards by the operator's HQ session, and every quote came from an
   agent. The judges' result isn't due until Jan 29, 2027.
 
+## 10. A replay on issues filed after the models' training cutoff (finding 17)
+Ten issues from one C repository (a website copier), filed in July 2026, after the models' June 2026 training cutoff,
+taken from SWE-bench-Live. Each was fixed once by one agent (A) and once by an architect with four groups of agents (B),
+then scored by the benchmark's official evaluator. Pre-registered before any build
+([finding 17](findings/finding-17-prereg.md); harness and results in [`data/swebench-live/`](../data/swebench-live/)).
+
+| Question | The replay | Earlier result | Verdict |
+|---|---|---|---|
+| Issues resolved, A vs B | 3 vs 2 of 10 (3 vs 3 without build products) | not measured | no difference found |
+| "Done" claims the evaluator didn't confirm | 75% (15 of 20; every task was marked done) | "done" often reworked (sections 8, 9) | agrees |
+| Minute quotes, error as quoted and with ×0.34 | 89% and 69% (A); 90% and 70% (B) | ×0.34 closer (sections 6, 9) | ×0.34 closer, still about 3× high |
+| Cost of the split | 39% saved in plan-equivalent (6% forecast); 28% more in reported tokens | split tasks at least 15% over (section 2) | disagrees |
+
+- **The one-issue gap comes from collection, not code:** B's patch for one issue carried test results its agent's own
+  test run left behind, so 4 of that issue's tests didn't run again during scoring. Without such files, A and B
+  resolve the same 3 issues.
+- **The saving depends on the unit:** B's five short sessions re-read about half the cached tokens of A's one long
+  session (12.3M against 23.9M), so B cost 39% less in plan-equivalent tokens, but its input, output and cache
+  writes came to 28% more.
+- **Limits:** one run per condition; ten related issues from one repository, eight opened on one day; the agents
+  edited files on Windows mounted into Linux containers (the scoring is official).
+
 ## What I could not measure, and the fix
 I couldn't measure the architect's extra memory, an "aim close to 150k" instruction, or edits outside an agent's
 task. The reason was the same each time: the change wasn't recorded where the data lives. The fix is cheap:
@@ -502,6 +524,7 @@ package's:
 | Section 7. Guardrails | finding 7 |
 | Section 8. "Done" claims | finding 9 |
 | Section 9. The game jam | finding 16 (its own scripts, in `data/megajam2026/`) |
+| Section 10. Issues after the cutoff | finding 17 (its own harness, in `data/swebench-live/`) |
 
 
 The package is in [`package/`](package/). Findings added after this note (11 to 13, the check of finding 9's claim

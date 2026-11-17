@@ -1,0 +1,171 @@
+{
+ "note": "Finding 17: one row per scored run, from the transcripts (harness.js measure and audit). The stopped first start is not included (deviation 8).",
+ "totals": {
+  "A": {
+   "runs": 1,
+   "reported": 338566,
+   "planEq": 2724649.5,
+   "agentMinutes": 17.943266666666666,
+   "wallMinutes": 17.943266666666666
+  },
+  "B": {
+   "runs": 5,
+   "reported": 433446,
+   "planEq": 1663024.2000000002,
+   "agentMinutes": 17.793216666666666,
+   "wallMinutes": 18.416166666666665
+  }
+ },
+ "runs": [
+  {
+   "run": "A-estimator",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "firstMessage": "2026-11-17T00:24:01.642Z",
+   "lastMessage": "2026-11-17T00:24:10.181Z",
+   "resumed": false,
+   "agentMinutes": 0.142,
+   "reported": 13105,
+   "cacheRead": 65511,
+   "planEquivalent": 19656,
+   "toolCalls": 1,
+   "tools": {
+    "PowerShell": 1
+   },
+   "refused": 0,
+   "auditFlags": 1
+  },
+  {
+   "run": "B-architect",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "firstMessage": "2026-11-17T00:24:02.038Z",
+   "lastMessage": "2026-11-17T00:25:27.904Z",
+   "resumed": false,
+   "agentMinutes": 1.431,
+   "reported": 35828,
+   "cacheRead": 398843,
+   "planEquivalent": 75712,
+   "toolCalls": 25,
+   "tools": {
+    "Read": 4,
+    "Bash": 4,
+    "Grep": 16,
+    "Write": 1
+   },
+   "refused": 1,
+   "auditFlags": 4
+  },
+  {
+   "run": "B-group-G3",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "firstMessage": "2026-11-17T00:37:43.691Z",
+   "lastMessage": "2026-11-17T00:41:13.566Z",
+   "resumed": false,
+   "agentMinutes": 3.498,
+   "reported": 83855,
+   "cacheRead": 2581999,
+   "planEquivalent": 342055,
+   "toolCalls": 94,
+   "tools": {
+    "Read": 21,
+    "Bash": 30,
+    "Grep": 8,
+    "Edit": 32,
+    "Write": 3
+   },
+   "refused": 5,
+   "auditFlags": 5
+  },
+  {
+   "run": "B-group-G1",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "firstMessage": "2026-11-17T00:37:43.740Z",
+   "lastMessage": "2026-11-17T00:41:15.359Z",
+   "resumed": false,
+   "agentMinutes": 3.527,
+   "reported": 97428,
+   "cacheRead": 3153249,
+   "planEquivalent": 412753,
+   "toolCalls": 118,
+   "tools": {
+    "Read": 38,
+    "Bash": 4,
+    "Grep": 26,
+    "Edit": 36,
+    "PowerShell": 11,
+    "Write": 3
+   },
+   "refused": 4,
+   "auditFlags": 4
+  },
+  {
+   "run": "B-group-G4",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "firstMessage": "2026-11-17T00:37:43.702Z",
+   "lastMessage": "2026-11-17T00:42:20.639Z",
+   "resumed": false,
+   "agentMinutes": 4.616,
+   "reported": 94288,
+   "cacheRead": 2913895,
+   "planEquivalent": 385678,
+   "toolCalls": 68,
+   "tools": {
+    "Read": 4,
+    "Bash": 30,
+    "Edit": 30,
+    "Write": 4
+   },
+   "refused": 2,
+   "auditFlags": 2
+  },
+  {
+   "run": "B-group-G2",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "firstMessage": "2026-11-17T00:37:43.712Z",
+   "lastMessage": "2026-11-17T00:42:27.008Z",
+   "resumed": false,
+   "agentMinutes": 4.722,
+   "reported": 122047,
+   "cacheRead": 3247796,
+   "planEquivalent": 446827,
+   "toolCalls": 112,
+   "tools": {
+    "Read": 30,
+    "Bash": 28,
+    "Grep": 11,
+    "Edit": 38,
+    "Write": 5
+   },
+   "refused": 3,
+   "auditFlags": 3
+  },
+  {
+   "run": "A-agent",
+   "model": "claude-sonnet-5-5",
+   "effort": "high",
+   "firstMessage": "2026-11-17T00:37:43.877Z",
+   "lastMessage": "2026-11-17T00:55:40.473Z",
+   "resumed": false,
+   "agentMinutes": 17.943,
+   "reported": 338566,
+   "cacheRead": 23860835,
+   "planEquivalent": 2724650,
+   "toolCalls": 373,
+   "tools": {
+    "Read": 112,
+    "Bash": 100,
+    "Grep": 59,
+    "Edit": 92,
+    "Write": 9,
+    "Monitor": 1
+   },
+   "refused": 5,
+   "auditFlags": 36
+  }
+ ]
+}

@@ -67,10 +67,13 @@ function up() {
 function down() { for (const t of tasks()) for (const cond of ['A', 'B']) { docker(['rm', '-f', cname(cond, t)], { allowFail: true }); console.log('removed', cname(cond, t)); } }
 
 // ---------- agent runs ----------
+// Claude Code checks Write (new files too) against Edit rules: a Write(...) rule grants nothing (probed 2026-11-17), so
+// every path an agent may write gets an Edit rule. docker exec is allowed from both shells (Bash and PowerShell);
+// a chained command that does anything more is refused (probed).
 function rules({ read, edit = [], write = [], exec = [] }) {
 	return { permissions: {
-		allow: [...read.flatMap((p) => [`Read(${p})`, `Glob(${p})`, `Grep(${p})`]), ...edit.map((p) => `Edit(${p})`), ...write.map((p) => `Write(${p})`),
-			...exec.map((c) => `Bash(docker exec ${c} bash -lc:*)`)],
+		allow: [...read.flatMap((p) => [`Read(${p})`, `Glob(${p})`, `Grep(${p})`]), ...[...new Set([...edit, ...write])].map((p) => `Edit(${p})`),
+			...exec.flatMap((c) => [`Bash(docker exec ${c} bash -lc:*)`, `PowerShell(docker exec ${c} bash -lc:*)`])],
 		deny: ['WebFetch', 'WebSearch'],
 	} };
 }
@@ -223,7 +226,7 @@ function audit() {
 				const inp = c.input || {}; const p = inp.file_path || inp.path || inp.notebook_path;
 				if (/^(WebFetch|WebSearch)$/.test(c.name) || /^mcp__/.test(c.name)) flags.push(`web or MCP tool ${c.name}`);
 				if (p && !norm(path.resolve(r.cwd, p)).startsWith(own)) flags.push(`${c.name} outside its folder: ${p}`);
-				if (c.name === 'Bash' && !allowedExec.test(String(inp.command || '').trim())) flags.push(`Bash not a docker exec into its own containers: ${String(inp.command).slice(0, 160)}`);
+				if ((c.name === 'Bash' || c.name === 'PowerShell') && !allowedExec.test(String(inp.command || '').trim())) flags.push(`${c.name} not a docker exec into its own containers: ${String(inp.command).slice(0, 160)}`);
 				if (/huggingface|github\.com|swe-bench|labdata\/swe-bench-live/i.test(JSON.stringify(inp))) flags.push(`${c.name} mentions the dataset or GitHub: ${JSON.stringify(inp).slice(0, 160)}`);
 			}
 		}

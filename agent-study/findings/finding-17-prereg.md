@@ -179,3 +179,14 @@ for another, 35 to 50 agent-min and 130k to 165k reported each; with the archite
 agent-min and 635k reported; `WALL: 62 min`; `SOLO: 190 agent-min, 690k reported`; `SAVING: 6% of tokens, 67% of
 wall-clock`. The architect ran 15 turns; its one refused call was a shell command (it has none). **Caps:** 3 x the
 larger quote, 2,100k, so 6,300k reported for each build.
+
+## Deviation after the estimates commit
+8. **Restart after a permission bug.** The first start of both builds (2026-11-17, 00:27 UTC) was stopped after about
+   2 minutes. Claude Code checks the Write tool against Edit rules, so B's groups could not write their result files
+   (A could: its Edit rule covers its whole folder), and `docker exec` was allowed from Bash but not from PowerShell,
+   which one group tried. Probed with a small model: a `Write(...)` rule grants nothing; a
+   `PowerShell(docker exec <container> bash -lc:*)` rule works; a chained command that writes anything is refused in
+   both shells. Fix: an Edit rule for every path an agent may write, and `docker exec` into its own containers allowed
+   from both shells. All 20 workspaces and containers were reset from the images, and both builds restarted with the
+   same briefs, plan, estimates and caps. The stopped start used 83k reported tokens for A and 258k for B (0.29M and
+   0.75M plan-equivalent); its records are kept apart (`kit/attempt1/`) and counted in neither build.

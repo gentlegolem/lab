@@ -141,3 +141,45 @@ minutes. It is tested on the jam's own transcripts before the port starts.
 - The jam's own cost has gaps (rows with no tokens, parallel windows).
 - The third-party assets are all replaced, so parity on looks is partly a matter of judgement. The blind playtest
   is the measure of it.
+
+## Deviations
+### 1. Three process rules, added before the first start marker (2026-11-17, about 02:55 to 03:10 UTC)
+This pre-registration was committed at 02:50 UTC and pushed. After that, HQ gave the port's lead session three
+process rules. At 03:06 UTC the port repo still had no start marker: `study/PHASES.log` was empty and there was no
+`phase/*` tag. They're recorded here before the first start marker.
+
+| Rule | What it adds | Kind |
+|---|---|---|
+| 1. Task ledger | `study/LEDGER.jsonl` (`tools/ledger.js`), per task: an estimate (agent-minutes, thousands of tokens) written when the task opens, before the work; a done claim and an independent check at the end (pass, fail or not checked); a failed check reopens the task and counts a retry; whether the owner was needed | measures only |
+| 2. Transcript copies | the port's transcripts copied (never moved) to a local data folder at the end of each work block, since Claude Code deletes them after 30 days. `timing.js` reads the copies too and drops repeated entries | measures only |
+| 3. No unfinished work | every task ends done and checked, or parked with a reason, what's left and the next step. An end-of-block sweep finishes or parks open tasks, branches, worktrees, added TODO or FIXME notes and stubs, and records the counts | **changes how the agents work** |
+
+**Why.** Rules 1 and 2 let this finding re-test earlier findings on the port's own tasks (below) and keep the raw data.
+Rule 3 keeps work from being left open at the end of a work block.
+
+**What rule 3 changes in the reading.**
+- It's an intervention. Any comparison with the jam is reported as "with an explicit finish rule", not as like for
+  like.
+- Finding 16's 24% isn't an open-task rate. It's the share of the jam's done tasks whose files saw no later fix-like
+  commit within 3 days (12 of 50; with 1 day, 35 of 145). The port reports two things next to the jam:
+  - that same measure, if its tasks list their commits;
+  - its closing states (done, parked, open), next to the jam ledger's statuses: 247 landed, 4 cut and 2 in
+    progress, of 253 rows.
+- Confounds for any comparison with the jam:
+  - a port with a working reference, not a new build;
+  - no jam deadline;
+  - different checks: the port's parity scenarios and independent checks, against the jam's bot playtests;
+  - a different set of tools and rules.
+- The sweeps take time. That time counts in whichever phase is open when they run. If the ledger records when
+  each sweep starts and ends, the sweeps' own time is reported too.
+
+**Re-tests on the port's tasks (rules set now, before the first start marker).** The measured agent time of a task
+comes from the transcripts: the active agent time of the threads that did it, and finding 17's first-to-last unit.
+The ledger's self-reported actuals are shown next to it but not used for any rule.
+
+| Earlier finding | Measure | Agrees if |
+|---|---|---|
+| 10, 14, 17: time quotes run high | measured / estimate per task, raw and x0.34 | the median of measured / raw estimate is 0.5 or lower. The x0.34 error is reported next to the raw one |
+| 17: done claims often go unconfirmed | done claims whose first independent check didn't pass (fail or not checked) | that share is 25% or more |
+| none yet (the jam's transcripts as the baseline): how often the owner steps in | owner messages, interrupts and owner-step minutes per active agent-hour | no rule. Reported next to the jam's rate from the same tool: 32 owner messages and 1 interrupt in 194.97 active agent-hours |
+| first-try landing | tasks done with no reopened check | no rule. Reported |

@@ -530,3 +530,6 @@ package's:
 The package is in [`package/`](package/). Findings added after this note (11 to 13, the check of finding 9's claim
 patterns, finding 10's pre-registered test and the UI judge check) are in [`findings/`](findings/), each with its
 codebook or test plan.
+
+Before the first push, the history was rewritten once to remove three lines from earlier versions of this file;
+nothing else changed. [`HISTORY.md`](HISTORY.md) maps the old commit ids to the new ones.

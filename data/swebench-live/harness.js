@@ -268,7 +268,7 @@ function goldSummary() {
 // ---------- clean (a check, not the main result): the same patches without new build products ----------
 // Drops a new file when it is named *.log, *.trs or .dirstamp, or is a libtool wrapper script. Fixed before any score.
 function clean() {
-	const isBuild = (chunk) => /\nnew file mode /.test(chunk) && (/^a\/(\S*\.(log|trs)|\S*\.dirstamp) b\//.test(chunk) || /temporary wrapper script/.test(chunk));
+	const isBuild = (chunk) => /\nnew file mode /.test(chunk) && (/^diff --git a\/(\S*\.(log|trs)|\S*\.dirstamp) b\//.test(chunk) || /temporary wrapper script/.test(chunk));
 	for (const c of ['A', 'B']) {
 		const p = JSON.parse(fs.readFileSync(path.join(KIT, `predictions-${c}.json`), 'utf8')); let dropped = 0;
 		for (const v of Object.values(p)) { const parts = v.model_patch.split(/^(?=diff --git )/m); const keep = parts.filter((x) => !isBuild(x)); dropped += parts.length - keep.length; v.model_patch = keep.join(''); }

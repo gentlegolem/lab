@@ -198,3 +198,6 @@ deviation 1, but they're committed after it, in the same commit as this note.
   was changed after it.
 - In the next commit: an owner step whose text names a task id in brackets (`[SYS-03]`) also counts toward that
   task. `data/bto-port/README.md` lists each part's commit and UTC time.
+- Exception to "nothing else heavy runs during a timed phase": the last test run on the jam's transcripts (about 7 s
+  at below-normal priority, after a 3.5 s Python count) ended at 03:14:35 UTC. It overlapped the first 7 seconds or
+  so of Plan.

@@ -196,3 +196,5 @@ deviation 1, but they're committed after it, in the same commit as this note.
   194.97.
 - One test run on the port's live logs, at 03:15 UTC, a minute into Plan, showed only that the files parse. No rule
   was changed after it.
+- In the next commit: an owner step whose text names a task id in brackets (`[SYS-03]`) also counts toward that
+  task. `data/bto-port/README.md` lists each part's commit and UTC time.

@@ -60,7 +60,7 @@ const s3 = [
 	{ type: 'user', timestamp: at('13:11'), sessionId: 'S3', uuid: 'v2', cwd: 'D:/Git/BackToOne-Godot', message: { role: 'user', content: '<local-command-stdout>x</local-command-stdout>' } },
 	{ ...asst('13:12', 7, [7, 70, 700, 7000]), sessionId: 'S3', cwd: 'D:/Git/BackToOne-Godot' },
 ];
-const stepsLog = [`${at('10:15')}\t12\texported the meshes`, `${at('12:10')},3,checked a scene`, `${at('15:00')} 5 outside`, 'bad'].join('\n');
+const stepsLog = [`${at('10:15')}\t12\t[T1] exported the meshes`, `${at('12:10')},3,checked a scene`, `${at('15:00')} 5 outside`, 'bad'].join('\n');
 
 (async () => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bto-timing-test-'));
@@ -170,7 +170,9 @@ const stepsLog = [`${at('10:15')}\t12\texported the meshes`, `${at('12:10')},3,c
 	assert.strictEqual(byId('T2').retries, 1);
 	// Claims: T1 done (pass), T2's claim (its check failed), T2 done (pass), T4 (not checked); T5's claim waits.
 	assert.deepStrictEqual(LG.claims.map(c => c.task + ':' + c.result), ['T1:pass', 'T2:fail', 'T2:pass', 'T4:not checked', 'T5:no check yet']);
-	const MT = T.measureTasks(LG, data, ms('14:00'));
+	const MT = T.measureTasks(LG, data, ms('14:00'), S.steps);
+	assert.deepStrictEqual(S.steps.map(s => s.task), ['T1', null, null]);
+	assert.strictEqual(MT.tasks.find(t => t.id === 'T1').ownerMinutes, 12);
 	const m = id => MT.tasks.find(t => t.id === id);
 	// T1: linked by its subagent's description; 10:01-10:03 inside 10:00-10:05 = 2 min of 10 estimated.
 	assert.strictEqual(m('T1').linked, true); assert.strictEqual(m('T1').activeMs, min(2)); assert.strictEqual(m('T1').reported, 555);

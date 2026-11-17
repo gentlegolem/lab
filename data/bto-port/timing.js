@@ -83,7 +83,8 @@ function parseOwnerSteps(text) {
 		const m = line.match(/^(\S+?)[\s,]+(\d+(?:\.\d+)?)(?:[\s,]+(.*))?$/);
 		const t = m ? Date.parse(m[1]) : NaN;
 		if (!m || isNaN(t) || !/(Z|[+-]\d\d:?\d\d)$/i.test(m[1])) { problems.push(`OWNER_STEPS.log line ${i + 1}: not "<UTC time> <minutes> <what>"`); return; }
-		steps.push({ t, minutes: Number(m[2]) });
+		const task = (m[3] || '').match(/\[([A-Za-z][A-Za-z0-9]*(?:-\d+)?)\]/);   // owner-step.ps1 -Task writes "[SYS-03] what"
+		steps.push({ t, minutes: Number(m[2]), task: task ? task[1] : null });
 	});
 	return { steps, problems };
 }
@@ -239,7 +240,7 @@ const QUOTE_FACTOR = 0.34;  // method 2 (findings 10, 14, 17)
 
 // A task's threads: subagents whose Agent description starts with the task id, the agent named in the ledger, or
 // (failing those) the lead thread of the ledger's session. Its time is measured from open to close (or --until).
-function measureTasks(ledger, data, untilMs) {
+function measureTasks(ledger, data, untilMs, steps = []) {
 	const problems = [];
 	const startsWithId = (d, id) => d && d.trim().toLowerCase().startsWith(id.toLowerCase()) && !/[a-z0-9]/i.test(d.trim().charAt(id.length));
 	const out = ledger.tasks.map(T => {
@@ -247,7 +248,8 @@ function measureTasks(ledger, data, untilMs) {
 		if (!streams.length && T.session && data.streams.has(T.session + '|lead')) streams.push([T.session + '|lead', data.streams.get(T.session + '|lead')]);
 		const win = [[T.start, T.end ?? untilMs]];
 		const keys = new Set(streams.map(([sk]) => sk));
-		const r = { ...T, linked: streams.length > 0, threads: streams.length, activeMs: 0, spanMs: 0, reported: 0 };
+		const r = { ...T, linked: streams.length > 0, threads: streams.length, activeMs: 0, spanMs: 0, reported: 0,
+			ownerMinutes: steps.filter(s => s.task === T.id).reduce((n, s) => n + s.minutes, 0) };
 		for (const [, s] of streams) {
 			r.activeMs += activeMs(s.times, win);
 			const inWin = s.times.filter(t => t >= win[0][0] && t <= win[0][1]);
@@ -289,6 +291,7 @@ function summarizeTasks(tasks, claims, phaseInfo) {
 		return { group: name, tasks: ts.length, done: done.length, parked: ts.filter(t => t.state === 'parked').length,
 			open: ts.filter(t => t.state === 'open').length, retries: ts.reduce((n, t) => n + t.retries, 0),
 			laterFails: ts.reduce((n, t) => n + t.laterFails, 0), ownerNeeded: ts.filter(t => t.ownerNeeded).length,
+			ownerMinutes: ts.reduce((n, t) => n + (t.ownerMinutes || 0), 0),
 			tasksChecked: firstOfTask.length, tasksFirstNotPass: firstOfTask.filter(c => c.result !== 'pass').length,
 			claims: cs.length, claimsNotConfirmed: cs.filter(c => c.result !== 'pass').length, claimsWaiting: all.length - cs.length,
 			firstTry: done.filter(t => t.retries === 0).length, linked: ts.filter(t => t.linked).length, withRatio: withRatio.length,
@@ -423,7 +426,7 @@ async function main() {
 	let ledger = null, taskInfo = null, taskSummary = null;
 	if (opts.ledger) {
 		ledger = parseLedger(fs.readFileSync(opts.ledger, 'utf8'));
-		taskInfo = measureTasks(ledger, data, untilMs);
+		taskInfo = measureTasks(ledger, data, untilMs, stepInfo.steps);
 		taskSummary = summarizeTasks(taskInfo.tasks, ledger.claims, phaseInfo);
 		problems.push(...ledger.problems, ...taskInfo.problems);
 	}
@@ -460,7 +463,7 @@ async function main() {
 		console.log(`- Owner, per active agent-hour in any phase: ${agentH ? (result.total.ownerMessages / agentH).toFixed(3) : '-'} messages, ` +
 			`${agentH ? (result.total.ownerInterrupts / agentH).toFixed(3) : '-'} interrupts, ${agentH ? (result.total.ownerMinutes / agentH).toFixed(2) : '-'} step minutes.`);
 		console.log(`- Per task (the first check of each task's first claim, as tools/ledger.js counts it): ${a.tasksFirstNotPass} of ${a.tasksChecked} not pass.`);
-		console.log(`- First-try landing: ${a.firstTry} of ${a.done} done task(s) with no reopened check. Later fails on done tasks: ${a.laterFails}. Tasks that needed the owner: ${a.ownerNeeded}.`);
+		console.log(`- First-try landing: ${a.firstTry} of ${a.done} done task(s) with no reopened check. Later fails on done tasks: ${a.laterFails}. Tasks that needed the owner: ${a.ownerNeeded}; owner-step minutes tied to tasks: ${a.ownerMinutes}.`);
 		const sweepMin = ledger.sweeps.reduce((n, s) => n + (s.start ? (s.t - s.start) / 60000 : 0), 0);
 		console.log(`- Sweeps: ${ledger.sweeps.length}, ${sweepMin.toFixed(1)} min in all (counted in whichever phase was open).`);
 	}

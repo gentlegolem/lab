@@ -1,9 +1,20 @@
 # Port timing (finding 18)
 
 The timing tool for [finding 18](../../agent-study/findings/finding-18-prereg.md), the agent-led port of Back to One
-from UE 5.9 to Godot 4. It was written and tested before the port's first start marker (2026-11-17, 03:14:28 UTC).
-The ledger reading and the once-per-entry rule were added just after it (the pre-registration's deviation 2). The
-rules below are fixed from then on: a change is a deviation.
+from UE 5.9 to Godot 4. It was written and tested before the port's first start marker, and its rules below are
+fixed: a change is a deviation.
+
+**When each part was committed (UTC, 2026-11-17):**
+| Part | Commit | Time |
+|---|---|---|
+| The timing tool and its tests on the jam's transcripts | `3575cf4`, `288e28b` | 03:04:09, 03:04:21 |
+| The port's first start marker (Plan) | (port repo) | 03:14:28 |
+| Ledger reading and the once-per-entry rule (the pre-registration's deviation 2) | `8d831e8` | 03:16:24 |
+| Owner steps tied to a task, and this note | the commit after `8d831e8` | after 03:16:24 |
+
+The extension was asked for before the start marker and committed after it. It was committed before any port data
+was analysed. The only run on the port's data was one parse check at 03:15 UTC, a minute into Plan, which showed
+the files read without errors.
 
 | File | What it does |
 |---|---|
@@ -54,7 +65,8 @@ file's entries. `--until` sets the end of a phase that's still open (default: no
     output and subagent prompts.
   - Interrupts ("[Request interrupted by user...]") get their own column.
 - **Owner steps.** `OWNER_STEPS.log`, one step per line: UTC time, minutes, what. A step falls in the phases open at
-  its time.
+  its time. A step whose text holds a task id in brackets (`owner-step.ps1 -Task SYS-03` writes `[SYS-03] ...`)
+  also counts toward that task.
 - **Task ledger** (`--ledger`, deviation 1). `study/LEDGER.jsonl` from the port's `tools/ledger.js`: append-only
   events folded by task id.
   - **Events:**

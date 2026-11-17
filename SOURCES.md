@@ -26,3 +26,11 @@ robots.txt: hub.docker.com: "User-agent: *" / "Disallow:" (nothing disallowed).
 Limits: 100 anonymous pulls per 6 hours; if run: the 10 chosen images once (about 7.9 GB compressed), with the docker CLI, no account. 10 tag-metadata reads used on 2026-11-16.
 Account: none (no Docker Hub login).
 Why: documented client (docker pull) well within the published anonymous limit.
+
+## github.com/microsoft/SWE-bench-Live and github.com/microsoft/RepoLaunch (the official evaluator) · 2026-11-16 · allowed
+Terms: GitHub acceptable use, quoted in the kanaka/mal block above. Code: MIT in both repos (LICENSE: "MIT License", "Copyright (c) Microsoft Corporation").
+Use: one `git clone` of SWE-bench-Live (commit afac77f2ce908ed37bc60ad0d42e7815a7589525) and its submodule RepoLaunch (c4b623d930f3728e5338664bb634021b98492cbf), into D:/LabData/swe-bench-eval. Python packages from PyPI through pip (the index's normal use), in a virtual environment there, pip cache off.
+robots.txt: not applicable (git clone, not page fetching).
+Limits: none hit; two clones.
+Account: none (no credential helper). Owner's OK: LB32, in chat, 2026-11-16.
+Why: a single clone of a public MIT repository is ordinary use.

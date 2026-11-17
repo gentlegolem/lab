@@ -20,8 +20,17 @@ git config user.email base@example.invalid
 tr '\0' '\n' < /tmp/untracked | sed -e 's/[][*?!#]/\\&/g' -e 's#^#/#' >> .git/info/exclude
 xargs -0 git add -f -- < /tmp/tracked
 git commit -qm base --no-verify
+# What an agent sees: every file's content, every symlink's target and every exec bit, outside the top .git. (The git
+# tree ids differ anyway: the copy records no file modes, a submodule becomes plain files, and the image's own local
+# changes to tracked files are part of the copy's base commit.)
+content() { ( cd "$1" && { find . -path ./.git -prune -o -type f -print0 | sort -z | xargs -0 sha1sum
+  find . -path ./.git -prune -o -type l -printf '%p -> %l\n' | sort
+  find . -path ./.git -prune -o -type f -perm -u+x -print | sort | sed 's/^/x /'; } | sha1sum | cut -d' ' -f1 ); }
 echo "REPO=$REPO"
 echo "TREE_IMAGE=$(cd "$REPO" && git rev-parse 'HEAD^{tree}')"
 echo "TREE_COPY=$(git rev-parse 'HEAD^{tree}')"
+echo "CONTENT_IMAGE=$(content "$REPO")"
+echo "CONTENT_COPY=$(content /out/repo)"
+echo "FILES=$(cd /out/repo && find . -path ./.git -prune -o \( -type f -o -type l \) -print | wc -l)"
 echo "TAR_ERRORS=$(wc -l < /tmp/tar.err)"
 echo "DIRTY=$(git status --porcelain | wc -l)"

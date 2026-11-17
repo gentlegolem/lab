@@ -141,3 +141,41 @@ tokens** = input + output + cache writes; **plan-equivalent** = reported + 10% o
   changes what an agent sees or what is measured. The order of every step is in `data/swebench-live/README.md`.
 - The scoring script that turns the evaluator's report into the table is written after the gold check shows the
   report's format, and before any build.
+
+## Deviations (listed with the estimates commit, before any build)
+1. **The "without the fix" run.** The evaluator counts an empty patch as unresolved without running anything, so the
+   gold check's fourth run used a no-op patch instead: it only adds one new text file at the repo root
+   (`F17_NOOP.txt`); the task's test patch is applied as usual.
+2. **The evaluator on a Windows host.** RepoLaunch's `LinuxRuntime.apply_patch` writes the patch file with Windows line
+   endings and joins the in-container path with a backslash, and `git apply` rejects such a patch (tested on a toy
+   repo). The evaluator runs unchanged through `run_eval.py`, which replaces that one method with a copy that writes
+   the file as UTF-8 with LF line endings and joins the path with `/`. Versions: SWE-bench-Live `afac77f2`, RepoLaunch
+   `c4b623d9`.
+3. **The copy check.** The git tree ids of the image and the copy differ for every task, for three reasons that change
+   no file: the copy records no file modes (`core.fileMode false`; 127 scripts are executable in the image), the
+   submodule `src/coucal` becomes plain files, and the image's own changes to tracked files (2 files in task 893) are
+   part of the copy's base commit. The check now compares every file's content, every symlink's target and every exec
+   bit: all 20 copies match their image (1,522 to 1,573 files).
+4. **Workers.** 3 evaluator workers, not 4: each task container takes 4 CPUs and 16 GB, and Docker has 64 GB.
+5. **Seal.** On gold runs the evaluator also writes `gold_patch_evaluated_instances.jsonl` (full dataset rows) and its
+   logs hold test names, so after the gold check the logs were reduced to resolved flags and test counts
+   (`kit/gold-check.json`) and deleted with the dataset; the seal check now also looks for any `.jsonl` or evaluator
+   log in the runs folder.
+6. **Symlinks.** The copies hold symlinks (36 in task 893's), written by Docker on the Windows folder; Windows-side
+   tools can't read them (the agents can, through `docker exec`). Same for A and B.
+7. **Seen since the pre-registration commit:** the evaluator's code; the dataset rows' field names; one field printed
+   by mistake, `log_parser` (a generic parser for `PASS: name` lines, the same for all 10 tasks); the repo's file
+   paths and modes for task 893 (no contents) while checking the copy; the gold check's counts below. Still not seen:
+   any issue text, fix, test, test command or code.
+
+**Gold check result.** The dataset's fixes resolved all 10 tasks in each of the three runs (5 minutes each); the no-op
+patch resolved none and applied everywhere. In 8 tasks the no-op run fails only the fix's own tests (1 to 3) and keeps
+178 to 202 others passing; in 837 and 850 every test (186 and 188) is a fail-to-pass test, and without the fix no test
+result comes out at all. No task is replaced.
+
+**Estimates** (`data/swebench-live/estimates/`). A: `ESTIMATE: 170 agent-min, 2100k reported`; the estimator read
+`TASKS.md` and answered (2 turns, 12 seconds, nothing refused). B's `PLAN.md`: 4 groups of 2 or 3 tasks, none waiting
+for another, 35 to 50 agent-min and 130k to 165k reported each; with the architect's own line (10 min, 50k), 175
+agent-min and 635k reported; `WALL: 62 min`; `SOLO: 190 agent-min, 690k reported`; `SAVING: 6% of tokens, 67% of
+wall-clock`. The architect ran 15 turns; its one refused call was a shell command (it has none). **Caps:** 3 x the
+larger quote, 2,100k, so 6,300k reported for each build.

@@ -5,10 +5,12 @@
 //   node harness.js estimate             A's estimate (Opus, read-only, in A's folder) -> kit/estimate-A.txt
 //   node harness.js architect            B's architect (Opus) -> B/PLAN.md
 //   node harness.js build --cap-a <tokens> --cap-b <tokens>   A's agent and B's groups at once
-//   node harness.js collect              patches from the containers -> kit/predictions-{A,B,empty}.json
+//   node harness.js collect              patches from the containers -> kit/predictions-{A,B,empty,noop}.json
 //   node harness.js measure              tokens and minutes per run -> kit/measured.json
 //   node harness.js audit                every run's tool calls -> kit/audit.json
-//   node harness.js seal-check           lists the dataset folder and the Hugging Face cache -> kit/seal-<time>.txt
+//   node harness.js score                the pre-registered measures and rules -> kit/score.json
+//   node harness.js gold-summary         the gold check's resolved flags per task and run -> kit/gold-check.json
+//   node harness.js seal-check           lists the dataset folder, the Hugging Face cache and stray rows -> kit/seal-<time>.txt
 // <runs> is SWL_RUNS or D:/LabData/swelive-runs. Every agent run goes in kit/runs.json.
 const fs = require('fs'); const path = require('path'); const os = require('os'); const cp = require('child_process'); const crypto = require('crypto');
 const { parseTranscript } = require('../../agent-study/package/src/lib/usage.js');
@@ -45,9 +47,9 @@ function copy() {
 		const r = docker(['run', '--rm', '--network', 'none', '-e', `BASE=${t.base_commit}`, '-v', `${winPath(dest)}:/out`, '--entrypoint', 'bash', t.docker_image, '-c', COPY_SH]);
 		const kv = Object.fromEntries(r.stdout.split('\n').filter((l) => l.includes('=')).map((l) => l.trim().split('=')));
 		out[`${cond}/${t.instance_id}`] = kv;
-		const same = kv.TREE_IMAGE === kv.TREE_COPY;
-		console.log(`${cond} ${t.instance_id}: repo ${kv.REPO}, same tree ${same}, tar errors ${kv.TAR_ERRORS}, dirty ${kv.DIRTY}`);
-		if (!same || kv.DIRTY !== '0') console.log('  CHECK THIS COPY: the tree differs from the image or the copy is not clean');
+		const same = !!kv.CONTENT_IMAGE && kv.CONTENT_IMAGE === kv.CONTENT_COPY;
+		console.log(`${cond} ${t.instance_id}: repo ${kv.REPO}, same content ${same} (${kv.FILES} files), tar errors ${kv.TAR_ERRORS}, dirty ${kv.DIRTY}`);
+		if (!same || kv.DIRTY !== '0' || kv.TAR_ERRORS !== '0') console.log('  CHECK THIS COPY: its files differ from the image, or the copy is not clean');
 	}
 	fs.writeFileSync(path.join(KIT, 'copy.json'), JSON.stringify(out, null, 1));
 }
@@ -171,8 +173,11 @@ async function build(capA, capB) {
 }
 
 // ---------- patches: git add -A in the container, diff against the base commit, binary files left out ----------
+// The evaluator counts an empty patch as unresolved without running it, so the gold check's "without the fix" run uses
+// NOOP: a patch that only adds one new text file at the repo root (the test patch is applied as usual).
+const NOOP = 'diff --git a/F17_NOOP.txt b/F17_NOOP.txt\nnew file mode 100644\n--- /dev/null\n+++ b/F17_NOOP.txt\n@@ -0,0 +1 @@\n+finding 17 no-op patch\n';
 function collect() {
-	const T = tasks(); const preds = { A: {}, B: {}, empty: {} };
+	const T = tasks(); const preds = { A: {}, B: {}, empty: {}, noop: {} };
 	for (const cond of ['A', 'B']) for (const t of T) {
 		const c = cname(cond, t);
 		docker(['exec', c, 'bash', '-lc', 'git add -A']);
@@ -181,7 +186,7 @@ function collect() {
 		const patch = docker(['exec', c, 'bash', '-lc', 'git --no-pager diff --cached HEAD --text']).stdout;
 		preds[cond][t.instance_id] = { model_patch: patch, model_name_or_path: `finding17-${cond}` };
 		console.log(`${cond} ${t.instance_id}: ${patch.split('\n').length} patch lines${bin.length ? `, ${bin.length} binary files left out` : ''}`);
-		if (cond === 'A') preds.empty[t.instance_id] = { model_patch: '', model_name_or_path: 'finding17-empty' };
+		if (cond === 'A') { preds.empty[t.instance_id] = { model_patch: '', model_name_or_path: 'finding17-empty' }; preds.noop[t.instance_id] = { model_patch: NOOP, model_name_or_path: 'finding17-noop' }; }
 	}
 	for (const k of Object.keys(preds)) fs.writeFileSync(path.join(KIT, `predictions-${k}.json`), JSON.stringify(preds[k], null, 1));
 }
@@ -233,15 +238,86 @@ function audit() {
 function sealCheck() {
 	const lines = [`seal check ${now()}`];
 	const walk = (d) => { if (!fs.existsSync(d)) return [`${d}: absent`]; const out = []; const st = [d];
-		while (st.length) { const x = st.pop(); for (const e of fs.readdirSync(x, { withFileTypes: true })) { const p = path.join(x, e.name); if (e.isDirectory()) st.push(p); else out.push(`${p} ${fs.statSync(p).size}`); } }
+		while (st.length) { const x = st.pop(); for (const e of fs.readdirSync(x, { withFileTypes: true })) { const p = path.join(x, e.name); if (e.isDirectory()) st.push(p); else { let size = '?'; try { size = fs.lstatSync(p).size; } catch { /* a Linux symlink on the Windows mount */ } out.push(`${p} ${size}`); } } }
 		return out.length ? out : [`${d}: empty`]; };
-	for (const d of DATASET_DIRS) lines.push(...walk(d).filter((l) => !/huggingface/i.test(l) || /swe-bench|swe_bench/i.test(l) || /absent|empty/.test(l)));
+	for (const d of DATASET_DIRS) { const hits = walk(d).filter((l) => !/huggingface/i.test(l) || /swe-bench|swe_bench/i.test(l) || /absent|empty/.test(l));
+		lines.push(...(hits.length ? hits : [`${d}: no SWE-bench copy`])); }
+	// dataset rows or evaluator logs left in the runs folder (eval.jsonl, gold_patch_evaluated_instances.jsonl, kit/logs)
+	const left = walk(RUNS).filter((l) => /\.jsonl |[\\/]kit[\\/]logs[\\/]/.test(l));
+	lines.push(`${RUNS}: ${left.length ? 'dataset rows or evaluator logs left:' : 'no .jsonl and no evaluator logs'}`, ...left);
 	const file = path.join(KIT, `seal-${now().replace(/[:.]/g, '-')}.txt`); fs.writeFileSync(file, lines.join('\n') + '\n'); console.log(lines.join('\n'));
+}
+
+// ---------- gold check summary: resolved or not per task per evaluator run, before the logs are deleted at the seal ----------
+function goldSummary() {
+	const logs = path.join(KIT, 'logs'); const out = {};
+	for (const run of fs.readdirSync(logs, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name)) {
+		out[run] = {};
+		for (const t of tasks()) { const f = path.join(logs, run, t.instance_id, 'report.json');
+			out[run][t.instance_id] = fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')).resolved : null; }
+	}
+	const golds = Object.keys(out).filter((r) => r.startsWith('gold-'));
+	const keep = tasks().filter((t) => golds.length === 3 && golds.every((r) => out[r][t.instance_id] === true) && out.noop && out.noop[t.instance_id] === false).map((t) => t.instance_id);
+	fs.writeFileSync(path.join(KIT, 'gold-check.json'), JSON.stringify({ runs: out, counts: keep }, null, 1));
+	for (const t of tasks()) console.log(t.instance_id, Object.keys(out).map((r) => `${r}=${out[r][t.instance_id]}`).join(' '), keep.includes(t.instance_id) ? 'COUNTS' : 'REPLACE');
+}
+
+// ---------- score: the pre-registered measures and rules (written after the gold check, before any build) ----------
+// Needs the evaluator's reports in kit/logs/eval-A and kit/logs/eval-B, kit/measured.json, kit/estimate-A.txt, B/PLAN.md,
+// A/RESULT.md and B/RESULT-G*.md, and kit/audit.json if present. Writes kit/score.json.
+function score() {
+	const ids = tasks().map((t) => t.instance_id); const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const ev = (c) => JSON.parse(fs.readFileSync(path.join(KIT, 'logs', `eval-${c}`, 'results.json'), 'utf8'));
+	const claims = (c) => { const dir = path.join(RUNS, c); const files = c === 'A' ? ['RESULT.md'] : fs.readdirSync(dir).filter((f) => /^RESULT-G\d+\.md$/.test(f));
+		const txt = files.map((f) => path.join(dir, f)).filter((f) => fs.existsSync(f)).map((f) => fs.readFileSync(f, 'utf8')).join('\n');
+		return Object.fromEntries(ids.map((id) => { const m = txt.match(new RegExp(`${esc(id)}\\s*:\\s*(NOT DONE|DONE)`)); return [id, m ? m[1] : 'no line']; })); };
+	const R = {}, C = {};
+	for (const c of ['A', 'B']) { const e = ev(c); R[c] = new Set(e.success_ids); C[c] = claims(c); R[c].errors = e.error_ids; R[c].empty = e.empty_patch_ids; }
+	const resolved = { A: ids.filter((id) => R.A.has(id)).length, B: ids.filter((id) => R.B.has(id)).length };
+	const diff = resolved.B - resolved.A;
+	const main = diff >= 2 ? 'B ahead' : diff <= -2 ? 'A ahead' : 'no difference found';
+	const doneStats = (cs) => { const done = cs.flatMap((c) => ids.filter((id) => C[c][id] === 'DONE').map((id) => ({ c, id })));
+		const bad = done.filter(({ c, id }) => !R[c].has(id)); return { done: done.length, doneButUnresolved: bad.length, share: done.length ? bad.length / done.length : null }; };
+	const done = { A: doneStats(['A']), B: doneStats(['B']), pooled: doneStats(['A', 'B']) };
+	done.verdict = done.pooled.share === null ? 'no DONE claims' : done.pooled.share >= 0.25 ? 'agrees' : 'disagrees';
+	const m = JSON.parse(fs.readFileSync(path.join(KIT, 'measured.json'), 'utf8')); const plan = parsePlan();
+	const estA = fs.readFileSync(path.join(KIT, 'estimate-A.txt'), 'utf8').match(/ESTIMATE:\s*([\d.]+)\s*agent-min,\s*([\d.,]+)k reported/);
+	const quote = { A: { minutes: Number(estA[1]), reported: Number(estA[2].replace(/,/g, '')) * 1000 },
+		B: { minutes: plan.architect.minutes + plan.groups.reduce((a, g) => a + g.minutes, 0), reported: (plan.architect.reportedK + plan.groups.reduce((a, g) => a + g.reportedK, 0)) * 1000 } };
+	const err = (measured, est) => Math.abs(measured / est - 1);
+	const minutes = {}; for (const c of ['A', 'B']) { const raw = err(m[c].agentMinutes, quote[c].minutes), corr = err(m[c].agentMinutes, quote[c].minutes * 0.34);
+		minutes[c] = { measured: m[c].agentMinutes, raw: quote[c].minutes, errRaw: raw, corrected: quote[c].minutes * 0.34, errCorrected: corr, closer: corr < raw ? 'x0.34' : 'raw' }; }
+	minutes.verdict = minutes.A.closer === 'x0.34' && minutes.B.closer === 'x0.34' ? 'agrees' : minutes.A.closer === 'raw' && minutes.B.closer === 'raw' ? 'disagrees' : 'mixed';
+	minutes.Bwall = { measured: m.B.wallMinutes, raw: plan.wall, errRaw: err(m.B.wallMinutes, plan.wall), errCorrected: err(m.B.wallMinutes, plan.wall * 0.34) };
+	const groupRows = m.rows.filter((r) => r.cond === 'B' && r.role === 'group');
+	const perGroup = plan.groups.map((g) => { const rs = groupRows.filter((r) => r.group === g.group);
+		return { group: g.group, tasks: g.tasks, forecastK: g.reportedK, measuredK: rs.reduce((a, r) => a + r.reported, 0) / 1000, forecastMin: g.minutes, measuredMin: rs.reduce((a, r) => a + r.minutes, 0) }; });
+	const groupsForecast = perGroup.reduce((a, g) => a + g.forecastK, 0), groupsMeasured = perGroup.reduce((a, g) => a + g.measuredK, 0);
+	const measuredSaving = (m.A.planEq - m.B.planEq) / m.A.planEq, forecastSaving = plan.saving.tokensPct / 100;
+	const split = { groupsForecastK: groupsForecast, groupsMeasuredK: groupsMeasured, groupsOver: groupsMeasured / groupsForecast - 1, measuredSaving, forecastSaving, perGroup };
+	split.verdict = split.groupsOver >= 0.15 && measuredSaving < forecastSaving ? 'agrees' : 'disagrees';
+	if (measuredSaving > 0 && resolved.B < resolved.A) split.note = 'the split saved tokens but resolved fewer tasks';
+	const runs = loadRuns(); const audit = fs.existsSync(path.join(KIT, 'audit.json')) ? JSON.parse(fs.readFileSync(path.join(KIT, 'audit.json'), 'utf8')) : null;
+	const also = { restarts: { A: runs.filter((r) => r.cond === 'A' && r.resumed).length, B: runs.filter((r) => r.cond === 'B' && r.resumed).length },
+		refused: audit && Object.fromEntries(Object.entries(audit).map(([k, v]) => [k, v.refused])), auditFlags: audit && Object.fromEntries(Object.entries(audit).map(([k, v]) => [k, (v.flags || []).length])),
+		models: runs.map((r) => `${r.cond}-${r.role}${r.group ? '-' + r.group : ''}: ${r.model}, effort ${r.effort}${r.resumed ? ' (continue)' : ''}`),
+		tokens: { A: { quoteK: quote.A.reported / 1000, measuredK: m.A.reported / 1000, planEqK: m.A.planEq / 1000 }, B: { quoteK: quote.B.reported / 1000, measuredK: m.B.reported / 1000, planEqK: m.B.planEq / 1000 } },
+		evaluatorErrors: { A: R.A.errors, B: R.B.errors }, emptyPatches: { A: R.A.empty, B: R.B.empty } };
+	const perTask = ids.map((id) => ({ id, A: R.A.has(id), B: R.B.has(id), claimA: C.A[id], claimB: C.B[id] }));
+	const out = { resolved, main, perTask, done, minutes, split, also };
+	fs.writeFileSync(path.join(KIT, 'score.json'), JSON.stringify(out, null, 1));
+	const pct = (x) => (x === null || x === undefined ? 'n/a' : `${Math.round(x * 100)}%`);
+	console.log(`resolved: A ${resolved.A}/10, B ${resolved.B}/10 -> ${main}`);
+	for (const t of perTask) console.log(`  ${t.id}: A ${t.A ? 'resolved' : '-'} (${t.claimA}), B ${t.B ? 'resolved' : '-'} (${t.claimB})`);
+	console.log(`done claims unresolved: A ${done.A.doneButUnresolved}/${done.A.done}, B ${done.B.doneButUnresolved}/${done.B.done}, pooled ${pct(done.pooled.share)} -> ${done.verdict}`);
+	for (const c of ['A', 'B']) console.log(`minutes ${c}: measured ${minutes[c].measured.toFixed(1)}, raw ${minutes[c].raw} (err ${pct(minutes[c].errRaw)}), x0.34 ${minutes[c].corrected.toFixed(1)} (err ${pct(minutes[c].errCorrected)}) -> ${minutes[c].closer}`);
+	console.log(`minutes verdict: ${minutes.verdict}; B wall ${minutes.Bwall.measured.toFixed(1)} vs ${minutes.Bwall.raw} (err raw ${pct(minutes.Bwall.errRaw)}, x0.34 ${pct(minutes.Bwall.errCorrected)})`);
+	console.log(`split: groups ${groupsMeasured.toFixed(0)}k vs ${groupsForecast}k forecast (${pct(split.groupsOver)} over); saving measured ${pct(measuredSaving)} vs forecast ${pct(forecastSaving)} -> ${split.verdict}${split.note ? ' (' + split.note + ')' : ''}`);
 }
 
 const [cmd, ...rest] = process.argv.slice(2);
 const opt = (k) => { const i = rest.indexOf(k); return i >= 0 ? Number(rest[i + 1]) : NaN; };
-const cmds = { copy, up, down, estimate, architect, collect, measure, audit, 'seal-check': sealCheck, plan: () => console.log(JSON.stringify(parsePlan(), null, 1)),
+const cmds = { copy, up, down, estimate, architect, collect, measure, audit, 'seal-check': sealCheck, 'gold-summary': goldSummary, score, plan: () => console.log(JSON.stringify(parsePlan(), null, 1)),
 	build: () => { const a = opt('--cap-a'), b = opt('--cap-b'); if (!(a > 0 && b > 0)) throw new Error('build needs --cap-a and --cap-b (reported tokens)'); return build(a, b); } };
-if (!cmds[cmd]) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 12).join('\n')); process.exit(1); }
+if (!cmds[cmd]) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 14).join('\n')); process.exit(1); }
 Promise.resolve(cmds[cmd]()).catch((e) => { console.error(e.message); process.exit(1); });

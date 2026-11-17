@@ -1,0 +1,13 @@
+# Test markers for running timing.js on the jam's own transcripts, before the port starts.
+# These are not jam markers (the jam had none): the four jam days in the jam's local time (UTC-5), ending at the
+# 17:35 submission, plus one "Jam" phase over all four, to check overlapping phases.
+2026-11-12T05:00:00Z	Jam	start
+2026-11-12T05:00:00Z	Thursday	start
+2026-11-13T05:00:00Z	Thursday	stop
+2026-11-13T05:00:00Z	Friday	start
+2026-11-14T05:00:00Z	Friday	stop
+2026-11-14T05:00:00Z	Saturday	start
+2026-11-15T05:00:00Z	Saturday	stop
+2026-11-15T05:00:00Z	Sunday	start
+2026-11-15T22:35:00Z	Sunday	stop
+2026-11-15T22:35:00Z	Jam	stop

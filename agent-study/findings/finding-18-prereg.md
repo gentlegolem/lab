@@ -201,3 +201,25 @@ deviation 1, but they're committed after it, in the same commit as this note.
 - Exception to "nothing else heavy runs during a timed phase": the last test run on the jam's transcripts (about 7 s
   at below-normal priority, after a 3.5 s Python count) ended at 03:14:35 UTC. It overlapped the first 7 seconds or
   so of Plan.
+
+### 3. A pause while no lead session ran, and Polish's missing start tag (2026-11-20, during the port)
+The port's lead ended its last work block on Nov 19: its last port commit is `4ea0da9` at 08:28:40 UTC, and its
+report hands over to "the new lead session". None started. Systems, Assets, Scenes, Audio and UI, and Polish stayed
+open until the owner stopped them with `phase.ps1` at 21:15:45 and 21:15:46 UTC on Nov 20 (his decision, LB41). Each
+restarts with `phase.ps1 start` when a lead session resumes; the timing tool sums each phase's start-to-stop
+intervals.
+- **How the idle span is reported (set now, before any timing run on the port's data).** The idle span runs from the
+  last entry of any counted session before 2026-11-20T21:15:45Z up to that time. Wall-clock is reported both ways:
+  as the markers give it, and with the idle span taken out of each phase open during it and out of the "All phases"
+  row. Either way, the comparison with the 37-74 h estimate gives both figures.
+- **Not changed:** active agent time, tokens and owner messages (a gap over 5 minutes never counts), owner steps (each
+  counts by its own time and minutes), the budget cap, and the time cap: 10 calendar days from the first start
+  marker, so the port ends by 2026-11-27T03:14:28Z whatever the pauses.
+- **Polish's start tag is missing.** The lead wrote the Polish start line itself in commit `bf16f5a` ("Lead: Polish
+  phase starts, POL-01 opened", 2026-11-18T04:35:35Z), without `phase.ps1`, so no `phase/polish/start` tag was made.
+  The commit's time matches the log line to the second. The tag check will list the tag as missing; none is added
+  after the fact. `phase/polish/stop` exists.
+- **What this analysis read for the decision:** the port's `PHASES.log`, git log and tags, `MORNING_REPORT.md`,
+  `PARITY.md` and `docs/QUESTIONS.md`. Two sessions ran in `D:\Git` on Nov 20 (a `/doctor` audit and one other); their
+  working folder is `D:\Git` and none of their tool calls names the port, so the session rule doesn't count them. That
+  check read only their working folders and a count of such tool calls. No timing figure for the port was computed.

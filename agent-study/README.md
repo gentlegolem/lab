@@ -1,4 +1,4 @@
-> **DRAFT, not yet published.** Draft v3.8 (2026-11-16). Numbers may still change before release.
+> **DRAFT, not yet published.** Draft v3.9 (2026-11-20). Numbers may still change before release.
 
 # What one multi-agent coding studio measured about its own setup and its agents' claims
 
@@ -53,8 +53,8 @@ well agents' claims ("this will save X", "done") match what is measured.
     **Rework score:** 100 = no fix-like commit seen. After the landing gate arrived, the median task scores 98 (class medians 96–99), so the
     score is "near its ceiling" and can't separate models or setups.
   - **Bias** = actual ÷ estimate. A minutes bias of 0.37 means the estimate was about 2.7× too high.
-- **The main limit:** this is observational data from one setup. Era, task mix and model choice changed together, and
-  no task was replayed under a second condition.
+- **The main limit:** sections 1–8 are observational data from one setup. Era, task mix and model choice changed
+  together, and none of those tasks was replayed under a second condition; sections 10 and 11 are two replays that were.
 
 ## 1. Budgeted tasks were small, and so were unbudgeted tasks on the same nights
 The 150k-token task maximum lived in the architect's plans and the briefs built from them, in two planning passes:
@@ -401,7 +401,29 @@ observational and after the fact ([finding 16](findings/finding-16-prereg.md); d
   prototype work. The quote pairs were picked afterwards by the operator's HQ session, and every quote came from an
   agent. The judges' result isn't due until Jan 29, 2027.
 
-## 10. A replay on issues filed after the models' training cutoff (finding 17)
+## 10. A replay on a known build (finding 14)
+The first task run under two conditions. Sections 2 and 6 rest on forecasts and observed runs; this replay measures
+the unsplit cost instead of forecasting it. One agent (A, Sonnet) and an architect (Opus) with five Sonnet task agents
+(B) each built a Make a Lisp interpreter in JavaScript: 11 steps, checked by the project's 947 official tests. The
+estimates were made before either build ran ([finding 14](findings/finding-14-prereg.md), with the per-run figures).
+
+| Question | The replay | Earlier result | Verdict |
+|---|---|---|---|
+| Tests passed | A 943, B 946 of 947; no hard failure in either | not measured | both done |
+| Minute quotes, error as quoted and with ×0.34 | 92% and 77% (A); 74% and 24% (B) | ×0.34 closer (section 6) | ×0.34 closer, still far too high |
+| Cost of the split | B cost 4.8× A in plan-equivalent tokens (973k against 204k), 5.5× in reported (613k against 112k); the plan forecast 2.0× in reported | split tasks at least 15% over (section 2) | doesn't agree: the tasks came in under their forecast, though the saving fell far short of it |
+
+- **The architect was the cost:** its own run used 347k reported tokens against 125k forecast (2.8×), 46% of B's
+  plan-equivalent, and its 13 minutes are 4.8 times A's whole build (2.7 minutes). B's five tasks used 0.49 of their
+  token forecast. Wall-clock, the one gain the plan forecast, came out 6.9 times A's.
+- **Quotes made from the task's size:** A took 0.08 of its raw quote; even with ×0.34 it was quoted 4.4 times too
+  high. B's totals look close only because the architect's own 13 minutes were forecast exactly: its five tasks took
+  5.1 of the 57 minutes they were quoted.
+- **Limits:** one run per condition. The models have very likely seen Make a Lisp implementations in training, so
+  this is a task they know, not new work; that is why finding 17 (section 11) replays issues filed after the training
+  cutoff. Not the studio's own harness: no landing gate, hooks or worktrees, and both builds shared the PC.
+
+## 11. A replay on issues filed after the models' training cutoff (finding 17)
 Ten issues from one C repository (a website copier), filed in July 2026, after the models' June 2026 training cutoff,
 taken from SWE-bench-Live. Each was fixed once by one agent (A) and once by an architect with four groups of agents (B),
 then scored by the benchmark's official evaluator. Pre-registered before any build
@@ -411,7 +433,7 @@ then scored by the benchmark's official evaluator. Pre-registered before any bui
 |---|---|---|---|
 | Issues resolved, A vs B | 3 vs 2 of 10 (3 vs 3 without build products) | not measured | no difference found |
 | "Done" claims the evaluator didn't confirm | 75% (15 of 20; every task was marked done) | "done" often reworked (sections 8, 9) | agrees |
-| Minute quotes, error as quoted and with ×0.34 | 89% and 69% (A); 90% and 70% (B) | ×0.34 closer (sections 6, 9) | ×0.34 closer, still about 3× high |
+| Minute quotes, error as quoted and with ×0.34 | 89% and 69% (A); 90% and 70% (B) | ×0.34 closer (sections 6, 9, 10) | ×0.34 closer, still about 3× high |
 | Cost of the split | 39% saved in plan-equivalent (6% forecast); 28% more in reported tokens | split tasks at least 15% over (section 2) | disagrees |
 
 - **The one-issue gap comes from collection, not code:** B's patch for one issue carried test results its agent's own
@@ -524,7 +546,8 @@ package's:
 | Section 7. Guardrails | finding 7 |
 | Section 8. "Done" claims | finding 9 |
 | Section 9. The game jam | finding 16 (its own scripts, in `data/megajam2026/`) |
-| Section 10. Issues after the cutoff | finding 17 (its own harness, in `data/swebench-live/`) |
+| Section 10. A known build | finding 14 (the per-run figures are in the finding) |
+| Section 11. Issues after the cutoff | finding 17 (its own harness, in `data/swebench-live/`) |
 
 
 The package is in [`package/`](package/). Findings added after this note (11 to 13, the check of finding 9's claim

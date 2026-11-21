@@ -1,4 +1,4 @@
-> Short version (2026-11-20) of the [full write-up](README.md). Tests still running (findings 10 and 18) are marked in
+> Short version (2026-11-21) of the [full write-up](README.md). Tests still running (findings 10 and 18) are marked in
 > the text.
 
 # What one multi-agent coding studio measured about its own setup and its agents' claims
@@ -108,8 +108,9 @@ this setup, the least-checked signal was the agent's own claim, so that is where
 ## About me and the method
 I'm a game engineer, in game development since 2004. At Eidos-Montréal I built game AI for the Tomb Raider games
 (GOAP planning; boss, crowd and co-op AI) and Deus Ex: Mankind Divided, then led gameplay teams of 5–8 as technical
-game director on Shadow of the Tomb Raider and Guardians of the Galaxy. From 2020 to 2022, as Senior Technical Director
-at Three Little Monsters, a game outsourcing studio, I hired about 20 engineers and helped partner studios ship 6 games,
+game director on Shadow of the Tomb Raider and Guardians of the Galaxy. From 2020 to 2022, at TLM Partners (Three Little
+Monsters), a game outsourcing studio, first as Senior Technical Game Director and then as Director of Engineering /
+Technical Game Director, I hired about 20 engineers and helped partner studios ship 6 games,
 which showed me how many different studios work. As Senior Director of Engineering at Reflector Entertainment, I led
 about 35 technical staff through Unknown 9: Awakening's launch on 5 platforms at once. I hold a B.Eng. in automated
 manufacturing engineering. The studio runs its product work as closed loops, and this note is one of them:

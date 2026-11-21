@@ -1,14 +1,19 @@
-> **DRAFT, not yet published.** Short version (2026-11-20) of the [full write-up](README.md). Numbers may still change
-> before release.
+> Short version (2026-11-20) of the [full write-up](README.md). Tests still running (findings 10 and 18) are marked in
+> the text.
 
 # What one multi-agent coding studio measured about its own setup and its agents' claims
 
 *[Jonathan Gauvin](https://www.linkedin.com/in/jonathangauvin), November 2026. Medians unless stated. Intervals are 95%, from drawing whole sessions 2,000 times. κ is agreement between two blind labellers beyond chance (1 is perfect, 0 is chance).*
 
-<!-- OWNER'S VOICE: carried over unchanged from the full version. Rewrite in your own words before publishing. -->
-I make games mostly on my own, across nine projects.
+I'm a AAA game developer turned indie: I make games on my own and with veteran developers from several disciplines.
 
-<!-- OWNER'S VOICE: both rubric reviewers ask for one line on who did what: what you designed and decided, what the agents ran and drafted. Write it yourself. -->
+**Who did what.** I directed the agents and made the decisions. I compared two ways of working (one agent alone, or an
+architect splitting the work into tasks of about 150k tokens), had the ledger and other features built, chose the tests
+and their sizes, reviewed and tuned the agents' work, and directed the analysis, the drafts and the re-tests, including
+an engine port ([finding 18](findings/finding-18-prereg.md), still running) and tasks each run in its own isolated
+container ([finding 17](findings/finding-17-prereg.md)). The agents wrote the code, measured the token use, suggested improvements, and drafted the
+documentation and this write-up.
+
 ## The data
 A coordinator agent splits the work, an architect agent plans large features, and specialist agents build in
 separate git worktrees; a landing gate merges only changes that pass the automated checks. Sections 1–6 cover 1,062
@@ -96,38 +101,42 @@ These questions have been studied with more control: AI forecasts in a randomise
 multi-agent failures ([Cemri et al., 2025](https://arxiv.org/abs/2503.13657)). This note adds one setup's own
 records, not a new method ([more](README.md#related-work)).
 
-<!-- OWNER'S VOICE: your research interest, carried over unchanged. Rewrite in your own words. -->
-The agents' own forecasts were the least checked numbers in the system. That is the question I'd like to study: how
-well agents' claims ("this will save X", "done") match what is measured.
+I want to study how to oversee many agents and people working in parallel on one project. Which checks catch an agent
+that drifts off task, acts outside its mandate, or reports "done" when the work isn't? How often, and at what cost? In
+this setup, the least-checked signal was the agent's own claim, so that is where I'd start.
 
-<!-- OWNER'S VOICE: this whole section is about you. Facts from your CV added 2026-11-08 at your request (roles, titles, team size, degree; nothing private); the wording is still a draft. Rewrite it yourself. -->
 ## About me and the method
 I'm a game engineer, in game development since 2004. At Eidos-Montréal I built game AI for the Tomb Raider games
 (GOAP planning; boss, crowd and co-op AI) and Deus Ex: Mankind Divided, then led gameplay teams of 5–8 as technical
-game director on Shadow of the Tomb Raider and Guardians of the Galaxy. As Senior Director of Engineering at Reflector
-Entertainment, I led about 35 technical staff through Unknown 9: Awakening's launch on 5 platforms at once. I hold a
-B.Eng. in automated manufacturing engineering. The studio runs its product work as closed loops, and this note is one
-of them:
+game director on Shadow of the Tomb Raider and Guardians of the Galaxy. From 2020 to 2022, as Senior Technical Director
+at Three Little Monsters, a game outsourcing studio, I hired about 20 engineers and helped partner studios ship 6 games,
+which showed me how many different studios work. As Senior Director of Engineering at Reflector Entertainment, I led
+about 35 technical staff through Unknown 9: Awakening's launch on 5 platforms at once. I hold a B.Eng. in automated
+manufacturing engineering. The studio runs its product work as closed loops, and this note is one of them:
 - **Estimates:** every task is estimated and measured; section 4 shows the correction step needs enforcing, not just
   publishing.
 - **UI changes:** rules from comparable games, a check per device, cheap web mockups instead of the engine, a blind
   judge model, then a human decision that can override it.
 - **Next:** tagging competitors' player feedback by feature, before and after their fixes.
 
-<!-- OWNER'S VOICE: your proposal and motivation, carried over unchanged except one section number ("Why this matters to me" above all). Rewrite it yourself. -->
 ## What I'd study next
 Across these findings, the least-checked signal is the agent's own claim, whether a forecast ("−24%", where at most
-−4% showed), a report ("done"), or an instruction it was given ("apply the correction"). This sits between scalable oversight (can a cheaper checker
-reliably supervise a stronger agent?) and AI control (which checks keep an agent safe when its own report is wrong?).
-I'd like to measure it properly:
-1. **Label claims against ground truth:** forecasts against measured cost, and "done" against git, the gate and later
-   fixes, with the labelling method and agreement rates published. Section 1 is a first measurement of this, from
-   one setup; the study would do it at scale, with more than one labeller.
-2. **Compare the catchers by catch rate and cost:** automated checks, a fresh judge, guardrail hooks, a human. Include
-   verdicts broken into parts, with a repair attempt before a rejection.
+−4% showed), a report ("done"), or an instruction it was given ("apply the correction"). This sits between AI control
+(which checks keep an agent safe when its own report is wrong?) and scalable oversight (can a cheaper checker reliably
+supervise a stronger agent?).
+
+My approach is a central system that holds a project's ideas, rules and features, and that people and agents consult
+before they act: does this fit the project's goals? What could it affect? Who is already working on something
+similar? Has this idea already been tried and ruled out? Guardrails, permissions and security rules live there too. I
+call it a neural knowledge project. Each answer is a check, to be measured like the others.
+
+I'd measure it in three steps, each pre-registered:
+1. **Label claims against ground truth:** "done" against an evaluator, git and later fixes; forecasts against measured
+   cost; with the labelling method and agreement rates published. Section 1 is a first measurement of this, from one
+   setup; the study would do it at scale, with more than one labeller.
+2. **Compare the catchers** (automated checks, a fresh judge model, hooks and permission rules, the system's answers,
+   a human) by catch rate, false alarms and cost, on the same tasks with and without each one.
 3. **Find leading signals** of a false claim: scope drift, skipped tests, context pressure, task size.
-4. **Run the controlled versions:** the same plans with and without a budget, the same tasks on two models, and a
-   period without the judge.
 
 **Why this matters to me.** I've always been passionate about automation; it's why I studied automation engineering.
 With AI, we can now automate so much, and I care that we do it ethically, legally and safely, in a way that keeps the
